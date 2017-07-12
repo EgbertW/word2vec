@@ -24,50 +24,66 @@ namespace Word2Vec
         public:
             Vocabulary(size_t vocab_hash_size);
             
-            /*Reads a word from file descriptor fin*/
+            /* Destructor */
+            ~Vocabulary();
+
+            /* Reads a word from file descriptor fin*/
             void readWord(char *word, FILE *fin);
 
             /* Returns hash value of a word*/
-            void DestroyVocab(vocabulary* voc);
+            int getWordHash(char const *word) const;
 
             /* Returns position of a word in the vocabulary;
              if the word is not found, returns -1*/
-            int SearchVocab(vocabulary* voc,char *word);
+            int search(char const *word);
 
             /* Reads a word and returns its index in the vocabulary*/
-            int ReadWordIndex(vocabulary* voc,FILE *fin);
+            int readWord(std::istream &input);
 
             /* Adds a word to the vocabulary*/
-            int AddWordToVocab(vocabulary* voc,char *word);
-
-            /* Used for sorting by word counts */
-            int VocabCompare(const void *a, const void *b);
+            int addWord(char const *word);
 
             /* Sorts the vocabulary by frequency using word counts - EXCEPT 0 -*/
-            void SortVocab(vocabulary* voc, int min_count);
+            void sort(size_t min_count);
 
             /* Reduces the vocabulary by removing infrequent tokens */
-            void ReduceVocab(vocabulary* voc,  int min_reduce);
+            void reduce(size_t min_reduce);
 
             /*Look if word already in vocab, 
             if not add, if yes, increment. --- REDUCE VOCAB TO 1 /!\  */
-            void searchAndAddToVocab(vocabulary* voc, char* word);
+            void searchAndAdd(char const *word);
 
             /*Create a vocab from train file - returns file size*/
-            long long LearnVocabFromTrainFile(vocabulary* voc, char* train_file,int min_count);
+            long long readTrainFile(char const * train_file, size_t min_count);
 
             /*Create a vocab of ngram from train file returns file size*/
-            long long LearnNGramFromTrainFile(vocabulary* voc, char* train_file,int min_count, int ngram, int position, int overlap);
+            long long learnNGramFromFile(char const *train_file, size_t min_count, bool ngram, bool position, bool overlap);
 
             /*Saves vocab & Occurences*/
-            void SaveVocab(vocabulary* voc, char* save_vocab_file);
+            void save(char const *save_vocab_file) const;
 
             /* Reads a saved vocab file */
-            long long ReadVocab(vocabulary* voc, char* read_vocab_file, char* train_file, int min_count);
+            long long read(char const *read_vocab_file, char const *train_file, size_t min_count);
 
             /* Create binary Huffman tree using the word counts
              Frequent words will have short uniqe binary codes*/
             void CreateBinaryTree(vocabulary* voc);
+
+            /** Get a word */
+            void get(size_t index) const;
+
+            /** Get the size */
+            void size() const;
     };
+
+    inline VocabularyWord const &Vocabulary::get(size_t index) const
+    {
+        return d_vocabulary[index];
+    }
+
+    inline size_t Vocabulary::size() const
+    {
+        return d_vocabulary.size();
+    }
 }
 #endif

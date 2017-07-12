@@ -3,6 +3,9 @@
 
 #define MAX_EXP 6
 #define MAX_STRING 100
+#define EXP_TABLE_SIZE = 1000;
+
+#include "Vocabulary.h"
 
 namespace Word2Vec
 {
@@ -10,44 +13,38 @@ namespace Word2Vec
     {
         public:
             typedef float real; // Precision of float numbers
+            std::shared_ptr<Vocabulary> d_vocabulary;
 
-            int EXP_TABLE_SIZE = 1000;
+            int d_binary = 0;
+            int d_cbow = 0;
+            int d_debug_mode = 2;
+            int d_window = 5,;
+            int d_min_count = 5;
+            int d_num_threads = 1;
+            int d_layer1_size = 100;
 
-            char train_file[MAX_STRING];
-            char output_file[MAX_STRING];
-            char save_vocab_file[MAX_STRING];
-            char read_vocab_file[MAX_STRING];
+            long long d_word_count_actual = 0;
+            long long d_file_size = 0;
+            long long d_classes = 0;
 
-            int binary = 0;
-            int cbow = 0;
-            int debug_mode = 2;
-            int window = 5,;
-            int min_count = 5;
-            int num_threads = 1;
-            int layer1_size = 100;
-
-            long long word_count_actual = 0;
-            long long file_size = 0;
-            long long classes = 0;
-
-            real alpha = 0.025;
-            real starting_alpha;
-            real sample = 0;
+            real d_alpha = 0.025;
+            real d_starting_alpha;
+            real d_sample = 0;
 
             //syn0 = vectors table
-            real *syn0;
-            real *syn1;
-            real *syn1neg
-            real *expTable;
+            real *d_syn0;
+            real *d_syn1;
+            real *d_syn1neg
+            real *d_expTable;
 
             clock_t start;
 
-            int hs = 1;
-            int negative = 0;
+            int d_hs = 1;
+            int d_negative = 0;
 
-            const int table_size = 1e8;
+            const int d_table_size = 1e8;
 
-            int *table;
+            int *d_table;
     }
 }
 
