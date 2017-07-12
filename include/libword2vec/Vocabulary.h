@@ -6,6 +6,9 @@
 #include <cstring>
 
 #define DEBUG_MODE 2
+#define MAX_STRING 100
+#define MAX_SENTENCE_LENGTH 1000
+#define MAX_CODE_LENGTH 40
 
 namespace Word2Vec
 {

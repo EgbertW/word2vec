@@ -1,0 +1,5 @@
+#include "libword2vec/Vocabulary.h"
+#include "libword2vec/NGrams.h"
+#include <cstring>
+#include <cstdio>
+
