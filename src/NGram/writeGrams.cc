@@ -1,23 +1,34 @@
+#include "ngrams.ih"
+#include <fstream>
 
-void writeGrams(vocabulary* voc,real *syn0,int layer1_size,int ngram,int hashbang,int position,char* output_file, int binary){
-	FILE *fo = fopen(output_file,"wb");
-	int a,b;
+using namespace std;
 
+namespace Word2Vec
+{
+    void writeGrams(Vocabulary &voc, float *syn0, size_t layer1_size, int ngram, bool hashbang, bool position, char *output_file, bool binary)
+    {
+        ofstream output(output_file, ios_base::out | ios_base::binary);
 
-	fprintf(fo, "%lld %d %d %d %d\n", voc->vocab_size, layer1_size, ngram, hashbang, position);
-	for (a = 0; a < voc->vocab_size; a++) {
-		fprintf(fo, "%s ", voc->vocab[a].word);
+        char sp = '';
+        output << voc.size() << sp << layer1_size << sp << ngram << sp << hashbang << sp << position;
+        for (size_t a = 0; a < voc.size(); ++a) 
+        {
+            output << voc.get(a) << sp;
 
-		if (binary)
-			for (b = 0; b < layer1_size; b++)
-				fwrite(&syn0[a * layer1_size + b], sizeof(real), 1, fo);
-		else
-			for (b = 0; b < layer1_size; b++)
-				fprintf(fo, "%lf ", syn0[a * layer1_size + b]);
+            if (binary)
+            {
+                for (size_t b = 0; b < layer1_size; ++b)
+                    output.write(reinterpret_cast<char *>(&syn0[a * layer1_size + b]), sizeof(float));
+            }
+            else
+            {
+                for (size_t b = 0; b < layer1_size; ++b)
+                    output << syn0[a * layer1_size + b] << sp;
+            }
 
-		fprintf(fo, "\n");
-	}
+            output << '\n';
+        }
 
-	fclose(fo);
+        output.close();
+    }
 }
-

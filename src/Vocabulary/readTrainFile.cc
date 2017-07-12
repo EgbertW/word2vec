@@ -1,48 +1,55 @@
+#include "vocabulary.ih"
+#include <fstream>
+#include <iostream>
 
-/*Create a vocab from train file*/
-long long LearnVocabFromTrainFile(vocabulary* voc, char* train_file,int min_count) {
-	int i;
-	char word[MAX_STRING];
-	FILE * fin;
+using namespace std;
 
-	for (i = 0; i < voc->vocab_hash_size; i++) //init vocab hashtable
-		voc->vocab_hash[i] = -1;
+namespace Word2Vec
+{
+    /*Create a vocab from train file*/
+    long long readTrainFile(char const *train_file, size_t min_count)
+    {
+        char word[MAX_STRING];
+        
+        for (size_t i = 0; i < d_vocab_hash_size; ++i) //init vocab hashtable
+            d_vocab_hash[i] = -1;
 
-	fin = fopen(train_file, "rb");
+        ifstream input(train_file, ios_base::in | ios_base::binary);
 
-	if (fin == NULL) {
-		printf("ERROR: training data file not found!\n");
-		exit(1);
-	}
-	
-	voc->vocab_size = 0;
-	AddWordToVocab(voc, (char *)"</s>");
+        if (not input.good())
+        {
+            cerr << "ERROR: training data file not found!\n";
+            exit(1);
+        }
+        
+        d_vocabulary.clear();
+        d_train_words = 0;
+        addWord("</s>");
 
-	while (1) {
+        while (not input.eof())
+        {
+            readWord(word, input);
+            searchAndAddToVocab(word);
+            
+            if (input.eof())
+                break;
 
-		ReadWord(word, fin);
-		searchAndAddToVocab(voc,word);
-		
-		if (feof(fin))
-			break;
+            ++d_train_words;
 
-		voc->train_words++;
+            if ((DEBUG_MODE > 1) && (d_train_words % 100000 == 0))
+                cout << d_train_words << endl;
+        }
 
-		if ((DEBUG_MODE > 1) && (voc->train_words % 100000 == 0)) {
-			printf("%lldK%c", voc->train_words / 1000, 13);
-			fflush(stdout);
-		}
-	}
+        sort(min_count);
 
-	SortVocab(voc,min_count);
+        if (DEBUG_MODE > 1)
+        {
+            cout << "Vocabulary size: " << d_vocabulary.size() << endl;
+            cout << "Words in train file:  " << d_train_words << endl;
+        }
 
-	if (DEBUG_MODE > 1) {
-		printf("Vocab size: %lld\n", voc->vocab_size);
-		printf("Words in train file: %lld\n", voc->train_words);
-	}
-
-	long long file_size = ftell(fin);
-	fclose(fin);
-	return file_size;
+        long long file_size = input.tellg();
+        input.close();
+        return file_size;
+    }
 }
-

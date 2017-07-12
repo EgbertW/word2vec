@@ -1,23 +1,25 @@
+#include "ngrams.ih"
 
-/*1->min 0->max*/
-void minMaxGram(real* syn0, int layer1_size,int offset,real *vector,int min)
+namespace Word2Vec
 {
-	int i;
-
-	if(min){
-		for (i=0; i < layer1_size;i++)
-		{
-			if(vector[i]>syn0[offset+i])
-				vector[i]=syn0[offset+i];
-		}
-	}
-	else
-	{
-		for (i=0; i < layer1_size;i++)
-		{
-			if(vector[i]<syn0[offset+i])
-				vector[i]=syn0[offset+i];
-		}
-	}
+    /*1->min 0->max*/
+    void minMaxGram(float *syn0, size_t layer1_size, size_t offset, float *vector, bool min)
+    {
+        if (min)
+        {
+            for (size_t i = 0; i < layer1_size; ++i)
+            {
+                if (vector[i] > syn0[offset + i])
+                    vector[i] = syn0[offset + i];
+            }
+        }
+        else
+        {
+            for (size_t i = 0; i < layer1_size; ++i)
+            {
+                if (vector[i] < syn0[offset + i])
+                    vector[i] = syn0[offset + i];
+            }
+        }
+    }
 }
-

@@ -1,12 +1,19 @@
+#include "vocabulary.ih"
 
-/*Saves vocab & Occurences*/
-void SaveVocab(vocabulary* voc, char* save_vocab_file) {
-  long long i;
-  FILE *fo = fopen(save_vocab_file, "wb");
+#include <fstream>
 
-  for (i = 0; i < voc->vocab_size; i++)
-  	fprintf(fo, "%s %lld\n", voc->vocab[i].word, voc->vocab[i].cn);
+using namespace std;
 
-  fclose(fo);
+namespace Word2Vec
+{
+    /* Saves vocab & occurences */
+    void Vocabulary::save(char const *save_vocab_file)
+    {
+        ofstream output(save_vocab_file, ios_base::out | ios_base::binary);
+
+        for (auto ptr : d_vocabulary)
+            out << ptr->word() << ' ' << ptr->cn() << '\n';
+        
+        output.close();
+    }
 }
-

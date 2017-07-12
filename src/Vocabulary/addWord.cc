@@ -1,31 +1,29 @@
+#include "vocabulary.ih"
 
-/* Adds a word to the vocabulary
-	Returns the vocabulary size */
-int AddWordToVocab(vocabulary* voc, char *word) {
-	unsigned int hash, length = strlen(word) + 1;
+namespace Word2Vec
+{
+    /** 
+     * Adds a word to the vocabulary
+     * @return size_t The vocabulary size
+     */
+    size_t Vocabulary::addWord(char const *word)
+    {
+        size_t hash;
+        size_t length = strlen(word) + 1;
 
-	if (length > MAX_STRING)
-		length = MAX_STRING;
+        if (length > MAX_STRING)
+            length = MAX_STRING;
+        
+        VocabularyWord word;
+        word.setWord(word);
+        d_vocabulary.push_back(word);
+        size_t index = d_vocabulary.size() - 1;
 
-	
-	voc->vocab[voc->vocab_size].word = (char *)calloc(length, sizeof(char));
-	strcpy(voc->vocab[voc->vocab_size].word, word);
+        hash = getWordHash(word);
+        while (vocab_hash[hash] != -1)
+            hash = (hash + 1) % voc->vocab_hash_size;
+        vocab_hash[hash] = index;
 
-	voc->vocab[voc->vocab_size].cn = 0;
-	voc->vocab_size++;
-
-	// Reallocate memory if needed
-	if (voc->vocab_size + 2 >= voc->vocab_max_size) {
-		voc->vocab_max_size += 1000;
-		voc->vocab = (struct vocab_word *)realloc(voc->vocab, voc->vocab_max_size * sizeof(struct vocab_word));
-	}
-	
-	hash = GetWordHash(voc,word);
-
-	while (voc->vocab_hash[hash] != -1)
-		hash = (hash + 1) % voc->vocab_hash_size;
-
-	voc->vocab_hash[hash] = voc->vocab_size - 1;
-	return voc->vocab_size - 1;
+        return d_vocabulary.size();
+    }
 }
-

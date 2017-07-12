@@ -1,70 +1,74 @@
+#include "vocabulary.ih"
+#include <fstream>
+#include <iostream>
 
-/*Create a vocab of ngram from train file*/
-long long LearnNGramFromTrainFile(vocabulary* voc, char* train_file,int min_count, int ngram, int hashbang, int position, int overlap) {
-	char word[MAX_STRING];
-	int i,lenWord;
-	FILE * fin;
-	
-	char gram[ngram*2+4]; //possibility to merge a ngram with another one < ngram size + position (3 tokens) + '\0'
+using namespace std;
 
-	for (i = 0; i < voc->vocab_hash_size; i++) //init vocab hashtable
-		voc->vocab_hash[i] = -1;
+namespace Word2Vec
+{
+    /* Create a vocab of ngram from train file */
+    long long learnNGramFromFile(char const *train_file, size_t min_count, int ngram, bool hashbang, bool position, bool overlap)
+    {
+        char word[MAX_STRING];
+        char *gram = new char[ngram * 2 + 4]; //possibility to merge a ngram with another one < ngram size + position (3 tokens) + '\0'
 
-	fin = fopen(train_file, "rb");
+        for (size_t i = 0; i < vocab_hash_size; ++i) //init vocab hashtable
+            vocab_hash[i] = -1;
+        
+        ifstream input(train_file, ios_base::in | ios_base::binary);
 
-	if (fin == NULL) {
-		printf("ERROR: training data file not found!\n");
-		exit(1);
-	}
-	
-	voc->vocab_size = 0;
-	AddWordToVocab(voc, (char *)"</s>");
+        if (!input.good())
+        {
+            cerr << "ERROR: training data file not found!\n";
+            exit(1);
+        }
+        
+        d_vocabulary.clear();
+        d_train_words = 0;
+        addWord("</s>");
 
-	while (1) {
+        while (!input.eof())
+        {
+            if (hashbang)
+                readWordHashbang(word, input);
+            else
+                readWord(word, input);
 
-		if(hashbang)
-			ReadWordHashbang(word,fin);
-		else
-			ReadWord(word,fin);
+            size_t lenWord = strlen(word);
 
-		lenWord = strlen(word);
+            if (lenWord <= ngram)
+            { //word smaller or equal to ngram var.
+                searchAndAdd(word);
+                continue;
+            }
 
-		if(lenWord<=ngram){ //word smaller or equal to ngram var.
-			searchAndAddToVocab(voc,word);
+            i = 0;
+            while (getGrams(word,gram,i, ngram, overlap, position, hashbang))
+            {
+                searchAndAdd(gram);
+                ++i;
+            }
 
-			if (feof(fin))
-				break;
-			else
-				continue;
-		}
+            if (input.eof())
+                break;
 
+            ++d_train_words;
 
-		i=0;
-		while(getGrams(word,gram,i, ngram, overlap, position,hashbang)){
-			searchAndAddToVocab(voc,gram);
-			i++;
-		}
+            if ((DEBUG_MODE > 1) && (d_train_words % 100000 == 0))
+                cout << d_train_words / 1000 << endl;
+        }
+        cout << "Vocab size: " << vocab_size << " - min_count " << min_count << endl;
+        sort(min_count);
 
-		if (feof(fin))
-			break;
+        if (DEBUG_MODE > 1)
+        {
+            cout << "Vocabulary size: " << vocab_size << endl;
+            cout << "Words in train file: " << d_train_words << endl;
+        }
 
-		voc->train_words++;
-
-		if ((DEBUG_MODE > 1) && (voc->train_words % 100000 == 0)) {
-			printf("%lldK%c", voc->train_words / 1000, 13);
-			fflush(stdout);
-		}
-	}
-	printf("Vocab size: %lld  - min_count %d \n", voc->vocab_size,min_count);
-	SortVocab(voc,min_count);
-
-	if (DEBUG_MODE > 1) {
-		printf("Vocab size: %lld\n", voc->vocab_size);
-		printf("Words in train file: %lld\n", voc->train_words);
-	}
-
-	long long file_size = ftell(fin);
-	fclose(fin);
-	return file_size;
+        long long file_size = input.tellg();
+        input.close();
+        delete [] gram;
+        return file_size;
+    }
 }
-

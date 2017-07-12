@@ -1,49 +1,59 @@
+#include "vocabulary.ih"
 
-/*Reads a saved vocab file*/
-long long ReadVocab(vocabulary* voc, char* read_vocab_file, char* train_file,int min_count) {
-	long long a, i = 0;
-	char c;
-	char word[MAX_STRING];
-	FILE *fin = fopen(read_vocab_file, "rb");
+#include <iostream>
+#include <fstream>
 
-	if (fin == NULL) {
-		printf("Vocabulary file not found\n");
-		exit(1);
-	}
+using namespace std;
 
-	for (a = 0; a < voc->vocab_hash_size; a++)
-		voc->vocab_hash[a] = -1;
+namespace Word2Vec
+{
+    /*Reads a saved vocabulary file*/
+    long long read(char *read_vocab_file, char *train_file, size_t min_count)
+    {
+        char word[MAX_STRING];
 
-	voc->vocab_size = 0;
+        ifstream input(read_vocab_file, ios_base::in | ios_base::binary);
+        if (not input.good())
+        {
+            cerr << "Vocabulary file not found\n";
+            exit(1);
+        }
 
-	while (1) {
-		ReadWord(word, fin);
+        for (size_t a = 0; a < vocab_hash_size; ++a)
+            d_vocab_hash[a] = -1;
 
-		if (feof(fin))
-			break;
+        d_vocabulary.clear();
+        size_t i = 0;
+        while (not input.eof())
+        {
+            readWord(word, input);
 
-		a = AddWordToVocab(voc,word);
-		fscanf(fin, "%lld%c", &voc->vocab[a].cn, &c);
-		i++;
-	}
+            if (input.eof())
+                break;
 
-	SortVocab(voc,min_count);
+            a = addWord(word);
+            input >> vocab[a].cn;
+            ++i;
+        }
 
-	if (DEBUG_MODE > 1) {
-		printf("Vocab size: %lld\n", voc->vocab_size);
-		printf("Words in train file: %lld\n", voc->train_words);
-	}
+        sort(min_count);
 
-	fin = fopen(train_file, "rb");
+        if (DEBUG_MODE > 1)
+        {
+            cout << "Vocabulary size: " << vocab_size << endl;
+            cout << "Words in train file: " << train_words << endl;
+        }
 
-	if (fin == NULL) {
-		printf("ERROR: training data file not found!\n");
-		exit(1);
-	}
+        input = ifstream(train_file, ios_base::in  || ios_base::binary);
+        if (not input.good())
+        {
+            cerr << "ERROR: training data file not found!\n";
+            exit(1);
+        }
 
-	fseek(fin, 0, SEEK_END);
-	long long file_size = ftell(fin);
-	fclose(fin);
-	return file_size;
+        input.seekg(0, io_base::end);
+        long long file_size = input.tellg();
+        input.close();
+        return file_size;
+    }
 }
-

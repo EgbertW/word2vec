@@ -1,49 +1,33 @@
 #ifndef __WORD2VEC_VOCABULARY_H_INCLUDED_
 #define __WORD2VEC_VOCABULARY_H_INCLUDED_
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <vector>
 
 #define DEBUG_MODE 2
 #define MAX_STRING 100
 #define MAX_SENTENCE_LENGTH 1000
 #define MAX_CODE_LENGTH 40
 
+#include "VocabularyWord.h"
+
 namespace Word2Vec
 {
-    class VocabularyWord
-    {
-        long long d_cn; // times of occurence in train file
-        int *d_point;
-        char *d_word;
-        char *d_code;
-        char d_codelen;
-    };
-
     class Vocabulary
     {
         protected:
             int d_vocab_hash_size;
             unsigned long long int d_train_words;
-            long long d_vocab_max_size;
-            long long d_vocab_size;
+
             int *d_vocab_hash;
-            struct vocab_word *d_vocab;
+            std::vector<VocabularyWord> d_vocabulary;
 
         public:
-            Vocabulary(size_t vocab_hash_size, size_t vocab_max_size);
+            Vocabulary(size_t vocab_hash_size);
             
             /*Reads a word from file descriptor fin*/
             void readWord(char *word, FILE *fin);
 
-            /*Reads a word and adds #hashbangs# around it from file descriptor fin*/
-            void readWordHashbang(char *word, FILE *fin);
-
             /* Returns hash value of a word*/
-            int GetWordHash(vocabulary* voc,char *word);
-
-            /*free the vocab structure*/ //TODO
             void DestroyVocab(vocabulary* voc);
 
             /* Returns position of a word in the vocabulary;
@@ -73,7 +57,7 @@ namespace Word2Vec
             long long LearnVocabFromTrainFile(vocabulary* voc, char* train_file,int min_count);
 
             /*Create a vocab of ngram from train file returns file size*/
-            long long LearnNGramFromTrainFile(vocabulary* voc, char* train_file,int min_count, int ngram, int hashbang, int position, int overlap);
+            long long LearnNGramFromTrainFile(vocabulary* voc, char* train_file,int min_count, int ngram, int position, int overlap);
 
             /*Saves vocab & Occurences*/
             void SaveVocab(vocabulary* voc, char* save_vocab_file);

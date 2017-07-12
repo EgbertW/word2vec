@@ -1,11 +1,11 @@
+#include "ngrams.ih"
 
-/*group by sum*/
-void sumGram(real* syn0, int layer1_size, int offset, real* vector)
+namespace Word2Vec
 {
-	int i;
-	for (i=0; i < layer1_size;i++)
-	{
-		vector[i]+=syn0[offset+i];
-	}
+    /*group by sum*/
+    void sumGram(float *syn0, size_t layer1_size, size_t offset, float *vector)
+    {
+        for (size_t i = 0; i < layer1_size; ++i)
+            vector[i] += syn0[offset + i];
+    }
 }
-

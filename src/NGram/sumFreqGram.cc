@@ -1,12 +1,13 @@
+#include "ngrams.ih"
 
-/*group by sum*/
-void sumFreqGram(real* syn0, int layer1_size,int offset, real* vector,int cn)
+namespace Word2Vec
 {
-	int i;
-	for (i=0; i < layer1_size;i++)
-	{
-		vector[i]+=(syn0[offset+i]* (1.00 / cn));
-	}
-
+    /*group by sum*/
+    void sumFreqGram(float *syn0, size_t layer1_size, size_t offset, float *vector, size_t cn)
+    {
+        for (size_t i = 0; i < layer1_size; ++i)
+        {
+            vector[i] += (syn0[offset + i]* (1.00 / cn));
+        }
+    }
 }
-

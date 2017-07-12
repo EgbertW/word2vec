@@ -1,12 +1,18 @@
+#include "vocabulary.ih"
 
-/* Reads a word and returns its index in the vocabulary*/
-int ReadWordIndex(vocabulary* voc, FILE *fin) {
-	char word[MAX_STRING];
-	ReadWord(word, fin);
+#include <fstream>
 
-	if (feof(fin)) 
-		return -1;
+namespace Word2Vec
+{
+    /* Reads a word and returns its index in the vocabulary*/
+    int Vocabulary::readWordIndex(ifstream &input)
+    {
+        char word[MAX_STRING];
+        readWord(word, input);
 
-	return SearchVocab(voc, word);
+        if (input.eof())
+            return -1;
+
+        return search(word);
+    }
 }
-

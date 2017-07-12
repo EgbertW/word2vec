@@ -1,37 +1,47 @@
+#include "vocabulary.ih"
 
-/*Reads a word from file descriptor fin*/
-void ReadWord(char *word, FILE *fin) {
-	int a = 0, character;
-	
-	while (!feof(fin)) {
-		character = fgetc(fin);
+#include <ifstream>
 
-		if (character == 13) //Carriage Return
-			continue;
+using namespace std;
 
-		if ((character == ' ') || (character == '\t') || (character == '\n')) {
-			
-			if (a > 0) {
-		    	if (character == '\n')
-		    		ungetc(character, fin); //we don't want the new line char.
-		    break;
-		  	}
+namespace Word2Vec
+{
+    /*Reads a word from file descriptor fin*/
+    void Vocabulary::readWord(char *word, ifstream &input)
+    {
+        size_t length = 0;
+        while (not input.eof())
+        {
+            int character = input.get();
 
-		 	if (character == '\n') { 
-			    strcpy(word, (char *)"</s>");  //newline become </s> in corpus
-			    return;
-		  	}
-		 	else
-		  		continue;
-		}
+            if (character == 13) //Carriage Return
+                continue;
 
-		word[a] = character;
-		a++;
+            if ((character == ' ') || (character == '\t') || (character == '\n'))
+            {
+                if (a > 0)
+                {
+                    if (character == '\n')
+                        input.unget(); //we don't want the new line char.
+                    break;
+                }
 
-		if (a >= MAX_STRING - 1)
-			a--;   // Truncate too long words
-	}
+                if (character == '\n')
+                { 
+                    strcpy(word, "</s>");  //newline become </s> in corpus
+                    return;
+                }
+                else
+                    continue;
+            }
 
-	word[a] = '\0';
-	return;
+            word[length] = character;
+            ++length;
+
+            if (length >= MAX_STRING - 1)
+                --length;   // Truncate too long words
+        }
+
+        word[length] = 0;
+    }
 }

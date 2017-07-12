@@ -1,38 +1,37 @@
+#include "vocabulary.ih"
 
-/* Reduces the vocabulary by removing infrequent tokens */
-void ReduceVocab(vocabulary* voc, int min_reduce) {
+namespace Word2Vec
+{
+    /* Reduces the vocabulary by removing infrequent tokens */
+    void reduce(size_t min_reduce)
+    {
+        unsigned int hash;
+            
+        std::vector reduced;
+        reduced.reserve(cur.size());
 
-	int a, b = 0;
-	unsigned int hash;
+        size_t vocab_size = d_vocabulary.size();
+        for (size_t a = 0; a < vocab_size; ++a)
+        {
+            if (d_vocabulary[a].cn > min_reduce)
+                reduced.push_back(std::move(d_vocabulary[a]));
+        }
 
-	for (a = 0; a < voc->vocab_size; a++){
-		if (voc->vocab[a].cn > min_reduce) {
+        vocab_size = reduced.size();
+        d_vocabulary = std::move(reduced);
 
-			voc->vocab[b].cn = voc->vocab[a].cn;
-			voc->vocab[b].word = voc->vocab[a].word;
-			b++;
+        for (size_t a = 0; a < d_vocab_hash_size; ++a)
+            d_vocab_hash[a] = -1;
 
-		} else
-			free(voc->vocab[a].word);
-	}
+        for (size_t a = 0; a < vocab_size; ++a)
+        {
+            // Hash will be re-computed, as it is not actual
+            hash = getWordHash(vocab[a].word());
 
-	voc->vocab_size = b;
+            while (vocab_hash[hash] != -1)
+                hash = (hash + 1) % d_vocab_hash_size;
 
-	for (a = 0; a < voc->vocab_hash_size; a++)
-		voc->vocab_hash[a] = -1;
-
-	for (a = 0; a < voc->vocab_size; a++) {
-		// Hash will be re-computed, as it is not actual
-		hash = GetWordHash(voc, voc->vocab[a].word);
-
-		while (voc->vocab_hash[hash] != -1)
-			hash = (hash + 1) % voc->vocab_hash_size;
-
-		voc->vocab_hash[hash] = a;
-	}
-
-	fflush(stdout);
-	min_reduce++;
+            d_vocab_hash[hash] = a;
+        }
+    }
 }
-
-
