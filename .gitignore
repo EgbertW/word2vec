@@ -1,10 +1,2 @@
-wikipedia
 data/*
-bin/*
-src/compute-accuracy
-src/distance
-src/word-analogy
-src/word2phrase
-src/word2vec
-text8
-*.txt
+/build/
