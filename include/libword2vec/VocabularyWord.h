@@ -59,7 +59,7 @@ namespace Word2Vec
                 ++d_cn;
             }
 
-            int const * point() const
+            int const *point() const
             {
                 return d_point;
             }
@@ -96,6 +96,11 @@ namespace Word2Vec
             char const *code() const
             {
                 return d_code.c_str();
+            }
+
+            char codeAt(int pos) const
+            {
+                return d_code[pos];
             }
 
             void setCode(char const *code)

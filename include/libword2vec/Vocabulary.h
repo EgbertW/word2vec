@@ -74,6 +74,9 @@ namespace Word2Vec
 
             /** Get the size */
             void size() const;
+
+            /** The numer of words to train on */
+            void nTrainWords() const;
     };
 
     inline VocabularyWord const &Vocabulary::get(size_t index) const
@@ -84,6 +87,11 @@ namespace Word2Vec
     inline size_t Vocabulary::size() const
     {
         return d_vocabulary.size();
+    }
+
+    inline size_t Vocabulary::nTrainWords() const
+    {
+        return d_train_words;
     }
 }
 #endif
