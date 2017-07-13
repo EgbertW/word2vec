@@ -1,0 +1,10 @@
+#include <TrainingThread.h>
+#include <NGrams.h>
+
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
+#include <ctime>
+
+#define DEBUG_MODE 2
+
