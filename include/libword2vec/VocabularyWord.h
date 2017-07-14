@@ -126,6 +126,11 @@ namespace Word2Vec
                 d_code.resize(codelen);
             }
 
+            void codeLen() const
+            {
+                return d_codelen;
+            }
+
             bool operator<(VocabularyWord const &rhs)
             {
                 return rhs.d_cn - d_cn;

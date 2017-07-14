@@ -1,11 +1,12 @@
 #include "trainingthread.ih"
 
+#include <ctime>
 #include <memory>
 using namespace std;
 
 namespace Word2Vec
 {
-    void TrainCBOWModelThread()
+    void TrainingThread::TrainCBOWModel()
     {
         shared_ptr<Vocabulary> voc = d_params.vocabulary;
 
@@ -19,14 +20,15 @@ namespace Word2Vec
 
         int start = 0;
 
+        
+
+
         real *neu1 = new real[d_params.layer1_size];
         real *neu1e = new real[d_params.layer1_size];
 
         ifstream input(d_params.train_file, ios_base::in | ios_base::binary);
 
         input.seekg(d_params.file_size / (long long)d_params.num_treads * d_params.id);
-
-        fseek(fi, d_params.file_size / (long long)d_params.num_threads * (long long)d_params.id, SEEK_SET);
 
         while (true)
         {
@@ -52,6 +54,9 @@ namespace Word2Vec
 
             if (sentence_length == 0)
             {
+
+
+
                 while (not input.eof())
                 {
                     int word = voc.readWordIndex(input);
@@ -61,6 +66,24 @@ namespace Word2Vec
 
                     ++word_count;
 
+                    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    
+
+                    
                     if (word == 0)
                         break;
 
@@ -73,6 +96,7 @@ namespace Word2Vec
                         if (ran < (next_random & 0xFFFF) / (real)65536)
                             continue;
                     }
+
                     sen[sentence_length] = word;
                     sentence_length++;
 
@@ -106,7 +130,7 @@ namespace Word2Vec
             /*--- Training ---*/
 
             // in -> hidden
-            for (size_t a = b; a < d_params.window * 2 + 1 - b; a++) //a = [0 window]->[(window*2+1)-rand] -> dynamic window
+            for (size_t a = b; a < d_params.window * 2 + 1 - b; ++a) //a = [0 window]->[(window*2+1)-rand] -> dynamic window
             {
                 if (a != d_params.window)
                 {
@@ -116,8 +140,8 @@ namespace Word2Vec
                         continue;
 
                     size_t last_word = sen[c]; //index of word
-
-                    if (last_word == -1) continue;
+                    if (last_word == -1)
+                        continue;
 
                     for (size_t c = 0; c < d_params.layer1_size; ++c) // c is each vector index
                         neu1[c] += d_params.syn0[c + last_word * d_params.layer1_size]; //sum of all vectors in input window (fig cbow) -> vectors on hidden
@@ -126,10 +150,9 @@ namespace Word2Vec
 
             if (d_params.hs)
             {
-                for (size_t d = 0; d < voc->vocab[word].codelen; d++)
+                for (size_t d = 0; d < voc->get(word).codeLen(); ++d)
                 {
                     real f = 0;
-                    real g;
                     size_t l2 = voc->get(word).pointAt(d) * d_params.layer1_size; //offset of word
                     // Propagate hidden -> output
                     for (size_t c = 0; c < d_params.layer1_size; ++c)
@@ -163,6 +186,7 @@ namespace Word2Vec
                 {
                     size_t target;
                     size_t label;
+
                     if (d == 0)
                     {
                         target = word;
@@ -174,7 +198,7 @@ namespace Word2Vec
                         target = d_params.table[(next_random >> 16) % d_params.table_size];
 
                         if (target == 0) 
-                            target = next_random % (voc->vocab_size - 1) + 1;
+                            target = next_random % (voc->size() - 1) + 1;
 
                         if (target == word)
                             continue;
@@ -204,16 +228,13 @@ namespace Word2Vec
             }
 
             // hidden -> in
-            for (size_t a = b; a < d_params.window * 2 + 1 - b; a++)
+            for (size_t a = b; a < d_params.window * 2 + 1 - b; ++a)
             {
                 if (a != d_params.window)
                 {
                     c = sentence_position - d_params.window + a;
 
-                    if (c < 0)
-                        continue;
-
-                    if (c >= sentence_length)
+                    if (c < 0 || c >= sentence_length)
                         continue;
 
                     size_t last_word = sen[c];
@@ -221,7 +242,7 @@ namespace Word2Vec
                     if (last_word == -1)
                         continue;
 
-                    for (c = 0; c < d_params.layer1_size; ++c)
+                    for (size_t c = 0; c < d_params.layer1_size; ++c)
                         d_params.syn0[c + last_word * d_params.layer1_size] += neu1e[c];  //modify word vectors with error
                 }
             }
@@ -239,6 +260,5 @@ namespace Word2Vec
 
         delete [] neu1;
         delete [] neu1e;
-        pthread_exit(NULL);
     }
 }
