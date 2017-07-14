@@ -1,4 +1,4 @@
-#include "trainingthread.h"
+#include "trainingthread.ih"
 
 #include <ctime>
 #include <memory>
@@ -6,7 +6,7 @@ using namespace std;
 
 namespace Word2Vec
 {
-    void TrainingThread::trainSKIPModel()
+    void *TrainSKIPModelThreadGram(void *arg)
     {
         shared_ptr<Vocabulary> voc = d_params.vocabulary;
 
@@ -14,14 +14,14 @@ namespace Word2Vec
         size_t last_word_count = 0;
         size_t sen[MAX_SENTENCE_LENGTH + 1];
 
-        size_t sentence_length = 0;
+        size_t sentence_length = 0,
         size_t sentence_position = 0;
         size_t next_random = d_params.id;
 
         int start = 0;
-
-
-
+        int end = ngram - 1;
+        char wordToGram[MAX_STRING];
+        char gram[ngram + 3];
 
         real *neu1 = new real[d_params.layer1_size];
         real *neu1e = new real[d_params.layer1_size];
@@ -31,7 +31,7 @@ namespace Word2Vec
         input.seekg(d_params.file_size / (long long)d_params.num_threads * d_params.id);
 
         while (true)
-        t
+        {
             if (word_count - last_word_count > 10000)
             {
                 (*d_params.word_count_actual) += word_count - last_word_count;
@@ -54,37 +54,37 @@ namespace Word2Vec
 
             if (sentence_length == 0)
             {
-            
-
+                wordToGram[0] = '\0'; //so length is 0
+                end = 0;
 
                 while (not input.eof())
                 {
-                    int word = voc.readWordIndex(input); 
+                    if (end == 0)
+                    {
+                        voc.ReadWord(wordToGram, input);
+                        i = 0;
+                    }
+
+                    end = getGrams(wordToGram, gram, i, ngram, overlap, position);
+
+                    if (end == -1)
+                        word = voc.search(wordToGram);
+                    else
+                        word = voc.search(gram);
+
+                    ++word_count;
+                    ++i;
+
+                    if (end == 0)
+                        continue;
+
+                    if (end == -1)
+                        end = 0;
 
                     if (word == -1)
                         continue;
 
-                    ++word_count;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    if (word == 0)
+                    if (word == 0) //context break
                         break;
 
                     // The subsampling randomly discards frequent words while keeping the ranking same
@@ -107,7 +107,7 @@ namespace Word2Vec
                 sentence_position = 0;
             }
 
-            if (input.eof())
+            if (input.eof()) //end file
                 break;
 
             if (word_count > voc->nTrainWords() / d_params.num_threads) //trained all word
@@ -121,7 +121,7 @@ namespace Word2Vec
             for (size_t c = 0; c < d_params.layer1_size; ++c)
                 neu1[c] = 0;
 
-            for (size_t c = 0; c < d_parmas.layer1_size; ++c)
+            for (size_t c = 0; c < d_params.layer1_size; ++c)
                 neu1e[c] = 0;
 
             next_random = next_random * (unsigned long long)25214903917 + 11;
@@ -130,20 +130,21 @@ namespace Word2Vec
             /*--- Training ---*/
 
             // in -> hidden
-            for (size_t a = b; a < d_params.window * 2 + 1 - b; ++a) //a = [0 window]->[(window*2+1)-rand] -> dynamic window
+            for (size_t a = b; a < d_params.window * 2 + 1 - b; ++a)
             {
-                if (a != d_params.window)
+                if (a != window)
                 {
-                    size_t c = sentence_position - d_params.window + a;
+                    c = sentence_position - d_params.window + a;
 
-                    if (c < 0 || c >= sentence_length)
+                    if (c < 0 || c >= sentence_length))
                         continue;
 
-                    size_t last_word = sen[c]; //index of word
+                    last_word = sen[c];
+
                     if (last_word == -1)
                         continue;
 
-                    size_t l1 = last_word * d_params.layer1_size; //word index
+                    l1 = last_word * d_params.layer1_size; //word index
 
                     for (c = 0; c < d_params.layer1_size; ++c)
                         neu1e[c] = 0;
@@ -151,10 +152,10 @@ namespace Word2Vec
                     // HIERARCHICAL SOFTMAX
                     if (d_params.hs)
                     {
-                        for (size_t d = 0; d < voc->get(word).codeLen(); ++d)
+                        for (size_t d = 0; d < voc->vocab[word].codelen; ++d)
                         {
                             real f = 0;
-                            size_t l2 = voc->get(word).pointAt(d) * d_params.layer1_size; //other words
+                            size_t l2 = voc->get(word).pointAt(d) * d_params.player1_size; //other words
                             // Propagate hidden -> output
                             for (c = 0; c < d_params.layer1_size; ++c)
                                 f += d_params.syn0[c + l1] * d_params.syn1[c + l2];
@@ -165,13 +166,13 @@ namespace Word2Vec
                             f = d_params.expTable[(int)((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2))];
 
                             // 'g' is the gradient multiplied by the learning rate
-                            g = (1 - voc->get(word).codeAt(d) - f) * (*d_params.alpha);
+                            real g = (1 - voc->get(word).codeAt(d) - f) * (*d_params.alpha);
                             // Propagate errors output -> hidden
-                            for (size_t c = 0; c < d_params.layer1_size; ++c)
+                            for (c = 0; c < d_params.layer1_size; ++c)
                                 neu1e[c] += g * d_params.syn1[c + l2];
                             // Learn weights hidden -> output
-                            for (size_t c = 0; c < d_params.layer1_size; ++c)
-                                syn1[c + l2] += g * d_params.syn0[c + l1];
+                            for (c = 0; c < d_params.layer1_size; ++c)
+                                d_params.syn1[c + l2] += g * d_params.syn0[c + l1];
                         }
                     }
 
@@ -181,8 +182,7 @@ namespace Word2Vec
                         for (size_t d = 0; d < d_params.negative + 1; ++d)
                         {
                             size_t target;
-                            size_t label;
-
+                            size_t word;
                             if (d == 0)
                             {
                                 target = word;
@@ -190,7 +190,7 @@ namespace Word2Vec
                             }
                             else
                             {
-                                next_random = next_random * (size_t)25214903917 + 11;
+                                next_random = next_random * (unsigned long long)25214903917 + 11;
                                 target = d_params.table[(next_random >> 16) % d_params.table_size];
 
                                 if (target == 0)
@@ -198,26 +198,24 @@ namespace Word2Vec
 
                                 if (target == word)
                                     continue;
-
                                 label = 0;
                             }
 
                             size_t l2 = target * d_params.layer1_size;
-                            real f = 0;
-                            real g;
+                            f = 0;
 
-                            for (size_t c = 0; c < d_params.layer1_size; ++c)
-                                f += d_params.syn0[c + l1] * d_params.syn1neg[c + l2];
+                            for (size_t c = 0; c < layer1_size; ++c)
+                                f += syn0[c + l1] * syn1neg[c + l2];
 
                             if (f > d_params.max_exp)
-                                g = (label - 1) * (*alpha);
+                                g = (label - 1) * (*d_params.alpha);
                             else if (f < -d_params.max_exp)
-                                g = (label - 0) * (*alpha);
+                                g = (label - 0) * (*d_params.alpha);
                             else
-                                g = (label - expTable[(int)((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2))]) * (*d_params.alpha);
+                                g = (label - d_params.expTable[(int)((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2))]) * (*d_params.alpha);
                             
                             for (size_t c = 0; c < d_params.layer1_size; ++c)
-                                neu1e[c] += g * d_params.syn1neg[c + l2];
+                                neu1e[c] += g * syn1neg[c + l2];
                             
                             for (size_t c = 0; c < d_params.layer1_size; ++c)
                                 d_params.syn1neg[c + l2] += g * d_params.syn0[c + l1];

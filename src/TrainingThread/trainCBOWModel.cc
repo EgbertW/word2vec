@@ -16,7 +16,7 @@ namespace Word2Vec
 
         size_t sentence_length = 0,
         size_t sentence_position = 0;
-        size_t next_random = (long long)d_params.id;
+        size_t next_random = d_params.id;
 
         int start = 0;
 
@@ -28,7 +28,7 @@ namespace Word2Vec
 
         ifstream input(d_params.train_file, ios_base::in | ios_base::binary);
 
-        input.seekg(d_params.file_size / (long long)d_params.num_treads * d_params.id);
+        input.seekg(d_params.file_size / (long long)d_params.num_threads * d_params.id);
 
         while (true)
         {
@@ -41,12 +41,12 @@ namespace Word2Vec
                 {
                     clock_t now = clock();
                     printf("%cAlpha: %f  Progress: %.2f%%  Words/thread/sec: %.2fk  ", 13, (*d_params.alpha),
-                    (*d_params.word_count_actual) / (real)(voc->train_words + 1) * 100,
+                    (*d_params.word_count_actual) / (real)(voc->nTrainWords() + 1) * 100,
                     (*d_params.word_count_actual) / ((real)(now - start + 1) / (real)CLOCKS_PER_SEC * 1000));
                     fflush(stdout);
                 }
 
-                (*d_params.alpha) = d_params.starting_alpha * (1 - (*d_params.word_count_actual) / (real)(voc->train_words + 1));
+                (*d_params.alpha) = d_params.starting_alpha * (1 - (*d_params.word_count_actual) / (real)(voc->nTrainWords() + 1));
 
                 if ((*d_params.alpha) < d_params.starting_alpha * 0.0001)
                     (*d_params.alpha) = d_params.starting_alpha * 0.0001;
@@ -98,7 +98,7 @@ namespace Word2Vec
                     }
 
                     sen[sentence_length] = word;
-                    sentence_length++;
+                    ++sentence_length;
 
                     if (sentence_length >= MAX_SENTENCE_LENGTH)
                         break;
@@ -107,7 +107,7 @@ namespace Word2Vec
                 sentence_position = 0;
             }
 
-            if (input.eof()) //end file
+            if (input.eof())
                 break;
 
             if (word_count > voc->nTrainWords() / d_params.num_threads) //trained all word
@@ -134,7 +134,7 @@ namespace Word2Vec
             {
                 if (a != d_params.window)
                 {
-                    c = sentence_position - d_params.window + a;
+                    size_t c = sentence_position - d_params.window + a;
                     
                     if (c < 0 || c >= sentence_length)
                         continue;
@@ -232,7 +232,7 @@ namespace Word2Vec
             {
                 if (a != d_params.window)
                 {
-                    c = sentence_position - d_params.window + a;
+                    size_t c = sentence_position - d_params.window + a;
 
                     if (c < 0 || c >= sentence_length)
                         continue;
@@ -242,7 +242,7 @@ namespace Word2Vec
                     if (last_word == -1)
                         continue;
 
-                    for (size_t c = 0; c < d_params.layer1_size; ++c)
+                    for (c = 0; c < d_params.layer1_size; ++c)
                         d_params.syn0[c + last_word * d_params.layer1_size] += neu1e[c];  //modify word vectors with error
                 }
             }
@@ -256,7 +256,7 @@ namespace Word2Vec
             }
         }
 
-        input.close():
+        input.close();
 
         delete [] neu1;
         delete [] neu1e;
