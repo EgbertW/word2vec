@@ -1,13 +1,13 @@
 #include "vocabulary.ih"
 
-#include <ifstream>
+#include <fstream>
 
 using namespace std;
 
 namespace Word2Vec
 {
     /*Reads a word from file descriptor fin*/
-    void Vocabulary::readWord(char *word, ifstream &input)
+    void Vocabulary::readWord(char *word, istream &input)
     {
         size_t length = 0;
         while (not input.eof())
@@ -19,7 +19,7 @@ namespace Word2Vec
 
             if ((character == ' ') || (character == '\t') || (character == '\n'))
             {
-                if (a > 0)
+                if (length > 0)
                 {
                     if (character == '\n')
                         input.unget(); //we don't want the new line char.

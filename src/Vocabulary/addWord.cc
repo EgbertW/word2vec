@@ -14,15 +14,15 @@ namespace Word2Vec
         if (length > MAX_STRING)
             length = MAX_STRING;
         
-        VocabularyWord word;
-        word.setWord(word);
-        d_vocabulary.push_back(word);
-        size_t index = d_vocabulary.size() - 1;
+        VocabularyWord vword;
+        vword.setWord(word);
+        d_vocabulary.push_back(vword);
+        size_t index = this->size() - 1;
 
         hash = getWordHash(word);
-        while (vocab_hash[hash] != -1)
-            hash = (hash + 1) % voc->vocab_hash_size;
-        vocab_hash[hash] = index;
+        while (d_vocab_hash[hash] != -1)
+            hash = (hash + 1) % d_vocab_hash_size;
+        d_vocab_hash[hash] = index;
 
         return d_vocabulary.size();
     }

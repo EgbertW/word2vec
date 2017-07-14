@@ -3,18 +3,20 @@
 
 #include <cstring>
 #include <string>
+#include <stdexcept>
 
 namespace Word2Vec
 {
     class VocabularyWord
     {
-        public:
-            long long cn; // times of occurence in train file
-            int *point;
+        private:
+            long long d_cn; // times of occurence in train file
+            int *d_point;
             std::string d_word;
             std::string d_code;
             size_t d_codelen;
 
+        public:
             VocabularyWord()
             :
                 d_cn(0),
@@ -28,24 +30,35 @@ namespace Word2Vec
                 d_word(rhs.d_word),
                 d_code(rhs.d_code)
             {
-                memcpy(d_point, rhs.d_point, MAX_CODE_LENGTH)
+                memcpy(d_point, rhs.d_point, MAX_CODE_LENGTH);
             }
 
             VocabularyWord(VocabularyWord &&rhs)
             :
-                d_cn(rhs.d_cn)
+                d_cn(rhs.d_cn),
                 d_point(rhs.d_point),
                 d_word(std::move(rhs.d_word)),
-                d_code(std::move(rhs.d_code)),
+                d_code(std::move(rhs.d_code))
             {
                 rhs.d_cn = 0;
                 rhs.d_point = nullptr;
                 rhs.d_codelen = 0;
             }
+
+            VocabularyWord &operator=(VocabularyWord &&rhs)
+            {
+                d_cn = rhs.d_cn;
+                d_point = rhs.d_point;
+                rhs.d_point = nullptr;
+                d_word = std::move(rhs.d_word);
+                d_code = std::move(rhs.d_code);
+                d_codelen = rhs.d_codelen;
+                return *this;
+            }
                 
             ~VocabularyWord()
             {
-                if (d_point !== nullptr)
+                if (d_point != nullptr)
                     delete [] d_point;
             }
 
@@ -59,12 +72,17 @@ namespace Word2Vec
                 ++d_cn;
             }
 
+            void setCn(size_t cn)
+            {
+                d_cn = cn;
+            }
+
             int const *point() const
             {
                 return d_point;
             }
 
-            void getPointAt(size_t index)
+            int getPointAt(size_t index)
             {
                 if (index > MAX_CODE_LENGTH)
                     throw std::range_error("Out of range");
@@ -78,7 +96,7 @@ namespace Word2Vec
                 d_point[index] = value;
             }
 
-            char const *word word() const
+            char const *word() const
             {
                 return d_word.c_str();
             }
@@ -126,7 +144,7 @@ namespace Word2Vec
                 d_code.resize(codelen);
             }
 
-            void codeLen() const
+            size_t codeLen() const
             {
                 return d_codelen;
             }

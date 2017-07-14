@@ -28,7 +28,10 @@ namespace Word2Vec
             ~Vocabulary();
 
             /* Reads a word from file descriptor fin*/
-            void readWord(char *word, FILE *fin);
+            void readWord(char *word, std::istream &input);
+
+            /* Reads a word from file descriptor fin*/
+            int readWordIndex(std::istream &input);
 
             /* Returns hash value of a word*/
             int getWordHash(char const *word) const;
@@ -41,7 +44,7 @@ namespace Word2Vec
             int readWord(std::istream &input);
 
             /* Adds a word to the vocabulary*/
-            int addWord(char const *word);
+            size_t addWord(char const *word);
 
             /* Sorts the vocabulary by frequency using word counts - EXCEPT 0 -*/
             void sort(size_t min_count);
@@ -57,7 +60,7 @@ namespace Word2Vec
             long long readTrainFile(char const * train_file, size_t min_count);
 
             /*Create a vocab of ngram from train file returns file size*/
-            long long learnNGramFromFile(char const *train_file, size_t min_count, bool ngram, bool position, bool overlap);
+            long long learnNGramFromFile(char const *train_file, size_t min_count, int ngram, int position, bool overlap);
 
             /*Saves vocab & Occurences*/
             void save(char const *save_vocab_file) const;
@@ -67,19 +70,27 @@ namespace Word2Vec
 
             /* Create binary Huffman tree using the word counts
              Frequent words will have short uniqe binary codes*/
-            void CreateBinaryTree(vocabulary* voc);
+            void createBinaryTree();
 
             /** Get a word */
-            void get(size_t index) const;
+            VocabularyWord const &get(size_t index) const;
+
+            /** Get a word */
+            VocabularyWord &get(size_t index);
 
             /** Get the size */
-            void size() const;
+            size_t size() const;
 
             /** The numer of words to train on */
-            void nTrainWords() const;
+            size_t nTrainWords() const;
     };
 
     inline VocabularyWord const &Vocabulary::get(size_t index) const
+    {
+        return d_vocabulary[index];
+    }
+
+    inline VocabularyWord &Vocabulary::get(size_t index) 
     {
         return d_vocabulary[index];
     }

@@ -17,7 +17,7 @@ namespace Word2Vec
             cout << "Sorting Vocabulary...\n";
         
         // Sort the vocabulary and keep </s> at the first position
-        sort(d_vocabulary.begin(), d_vocabulary.end());
+        std::sort(d_vocabulary.begin(), d_vocabulary.end());
 
         for (a = 0; a < d_vocab_hash_size; a++)
             d_vocab_hash[a] = -1;
@@ -25,40 +25,26 @@ namespace Word2Vec
         size = d_vocabulary.size();
         d_train_words = 0;
 
-        for (size_t a = 1; a < size; ++a)
+        auto ptr = d_vocabulary.begin();
+        while (ptr != d_vocabulary.end())
         {
             // Words occuring less than min_count times will be discarded from the vocab
-            if (d_vocabulary[a].cn < min_count)
-            {
-                vocab_size--;
-                //free(vocab[vocab_size].word); 
-                free(voc->vocab[a].word);
-                voc->vocab[a].word = NULL;
-            }
-            else 
-            {
-                // Hash will be re-computed, as after the sorting it is not actual
-                hash = GetWordHash(voc, voc->vocab[a].word);
-
-                while (voc->vocab_hash[hash] != -1)
-                    hash = (hash + 1) % voc->vocab_hash_size;
-
-                voc->vocab_hash[hash] = a;
-                voc->train_words += voc->vocab[a].cn;
-            }
+            if (ptr->cn() < min_count)
+                ptr = d_vocabulary.erase(ptr);
+            else
+                ++ptr;
         }
 
-        voc->vocab = (struct vocab_word *)realloc(voc->vocab, (voc->vocab_size + 1) * sizeof(struct vocab_word));
-        if(voc->vocab == NULL)
+        for (size_t a = 1; a < size; ++a)
         {
-            printf("memory realloc has miserably failed...\n");
-            exit(2);
-        }
+            // Hash will be re-computed, as after the sorting it is not actual
+            size_t hash = getWordHash(d_vocabulary[a].word());
 
-        // Allocate memory for the binary tree construction
-        for (a = 0; a < voc->vocab_size; a++) {
-            voc->vocab[a].code = (char *)calloc(MAX_CODE_LENGTH, sizeof(char));
-            voc->vocab[a].point = (int *)calloc(MAX_CODE_LENGTH, sizeof(int));
+            while (d_vocab_hash[hash] != -1)
+                hash = (hash + 1) % d_vocab_hash_size;
+
+            d_vocab_hash[hash] = a;
+            d_train_words += d_vocabulary[a].cn();
         }
     }
 }

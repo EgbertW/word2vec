@@ -1,24 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(libword2vec)
 
-add_definitions("-std=c++0x -O3 -s")
+add_definitions("-std=c++11 -O3 -s")
 set(CMAKE_BUILD_TYPE Debug)
 
 include_directories(include)
 
-add_library(vocabulary.o
-    src/Vocabulary/Vocabulary.cc
-)
-
-add_library(ngrams.o
-    src/NGrams/ngram_tools.cc
-)
-
-
 add_executable(word2vec src/word2vec.cc)
 
 target_link_libraries(word2vec
-    vocabulary.o
+    Vocabulary.o
+    WordModel.o
+    -pthread
 )
 
 
@@ -59,3 +52,51 @@ target_link_libraries(word2vec
 # 
 # clean:
 # 	pushd ${BIN_DIR} && rm -rf word2vec word2phrase distance word-analogy compute-accuracy; popd
+
+add_library(
+    ngrams.o
+    src/NGram/addGramPosition.cc
+    src/NGram/getGrams.cc
+    src/NGram/gramVocToWordVec.cc
+    src/NGram/mergeAndSaveVectors.cc
+    src/NGram/minMaxGram.cc
+    src/NGram/sumFreqGram.cc
+    src/NGram/sumGram.cc
+    src/NGram/truncGram.cc
+    src/NGram/writeGrams.cc
+)
+
+add_library(
+    TrainingThread.o
+    src/TrainingThread/trainCBOWModel.cc
+    src/TrainingThread/trainCBOWModelGram.cc
+    src/TrainingThread/trainSKIPModel.cc
+    src/TrainingThread/trainSKIPModelGram.cc
+)
+
+add_library(
+    Vocabulary.o
+    src/Vocabulary/addWord.cc
+    src/Vocabulary/createBinaryTree.cc
+    src/Vocabulary/destructor.cc
+    src/Vocabulary/getWordHash.cc
+    src/Vocabulary/learnNGramFromFile.cc
+    src/Vocabulary/readTrainFile.cc
+    src/Vocabulary/readVocabulary.cc
+    src/Vocabulary/readWord.cc
+    src/Vocabulary/readWordIndex.cc
+    src/Vocabulary/reduce.cc
+    src/Vocabulary/save.cc
+    src/Vocabulary/searchAndAdd.cc
+    src/Vocabulary/search.cc
+    src/Vocabulary/sort.cc
+    src/Vocabulary/Vocabulary.cc
+)
+
+add_library(
+    WordModel.o
+    src/WordModel/destructor.cc
+    src/WordModel/initUnigramTable.cc
+    src/WordModel/train.cc
+    src/WordModel/WordModel.cc
+)

@@ -2,8 +2,8 @@
 
 namespace Word2Vec
 {
-    void Vocabulary::~Vocabulary()
+    Vocabulary::~Vocabulary()
     {
-        delete [] vocab_hash;
+        delete [] d_vocab_hash;
     }
 }

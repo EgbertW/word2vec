@@ -8,7 +8,7 @@ using namespace std;
 namespace Word2Vec
 {
     /*Reads a saved vocabulary file*/
-    long long read(char *read_vocab_file, char *train_file, size_t min_count)
+    long long Vocabulary::read(char const *read_vocab_file, char const *train_file, size_t min_count)
     {
         char word[MAX_STRING];
 
@@ -19,7 +19,7 @@ namespace Word2Vec
             exit(1);
         }
 
-        for (size_t a = 0; a < vocab_hash_size; ++a)
+        for (size_t a = 0; a < d_vocab_hash_size; ++a)
             d_vocab_hash[a] = -1;
 
         d_vocabulary.clear();
@@ -31,8 +31,10 @@ namespace Word2Vec
             if (input.eof())
                 break;
 
-            a = addWord(word);
-            input >> vocab[a].cn;
+            size_t a = addWord(word);
+            size_t cn;
+            input >> cn;
+            get(a).setCn(cn);
             ++i;
         }
 
@@ -40,18 +42,18 @@ namespace Word2Vec
 
         if (DEBUG_MODE > 1)
         {
-            cout << "Vocabulary size: " << vocab_size << endl;
-            cout << "Words in train file: " << train_words << endl;
+            cout << "Vocabulary size: " << size() << endl;
+            cout << "Words in train file: " << nTrainWords() << endl;
         }
 
-        input = ifstream(train_file, ios_base::in  || ios_base::binary);
+        input = ifstream(train_file, ios_base::in | ios_base::binary);
         if (not input.good())
         {
             cerr << "ERROR: training data file not found!\n";
             exit(1);
         }
 
-        input.seekg(0, io_base::end);
+        input.seekg(0, ios_base::end);
         long long file_size = input.tellg();
         input.close();
         return file_size;
