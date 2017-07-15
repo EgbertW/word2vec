@@ -3,7 +3,7 @@
 namespace Word2Vec
 {
     /* Adds position to gram Ngram - gram tab size is ngram+3 index: [0->ngram+2]*/
-    void addGramPosition(char* word, char *gram, size_t size, size_t index, bool position, bool overlap, bool hashbang)
+    void addGramPosition(char *word, char *gram, size_t size, size_t index, int position, int overlap)
     {
         char num[3];
         int lenWord = strlen(word);
@@ -20,6 +20,7 @@ namespace Word2Vec
 
         if (position)
         {
+            // TODO: check for hashbang cruft
             /*	Adds '-' /!\ intended for no hashbangs */
             if (index == 0) //first index
             {
@@ -51,13 +52,14 @@ namespace Word2Vec
             if (index == 0 && gram[0 ]== '#')
                 return;
 
-            if(index == lastIndex && hashbang)
+            // TODO: check for hashbang cruft
+            if(index == lastIndex)
                 return;
 
             for (size_t i = lenGram + 1; i >= 0; --i)
                 gram[i + 3] = gram[i];
             
-            sprintf(num, "%d", index);
+            sprintf(num, "%lu", index);
             if (index >= 10)
             {
                 gram[0] = num[0];	

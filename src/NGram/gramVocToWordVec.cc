@@ -1,11 +1,12 @@
 #include "ngrams.ih"
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 
 namespace Word2Vec
 {
-    void gramVocToWordVec(Vocabulary &voc, float *syn0, size_t max_string, size_t layer1_size, int ngram, bool hashbang, int group_vec, bool binary, bool position, bool overlap, char *train_file, char *output_file)
+    void gramVocToWordVec(Vocabulary &voc, Parameters::real *syn0, size_t max_string, size_t layer1_size, int ngram, int group_vec, bool binary, bool position, bool overlap, char *train_file, char *output_file)
     {
         FILE *fin, *fo;
         char grama[ngram + 3];
@@ -14,14 +15,16 @@ namespace Word2Vec
         int start = 0;
         size_t end = 0;
         size_t offset;
-        int *hashset = new int[voc.hashSize()](-1);
+        int *hashset = new int[voc.hashSize()];
+        for (size_t i = 0; i < voc.hashSize(); ++i)
+            hashset[i] = -1;
         long long unsigned int cptWord = 0;
         long long int indGram;
         int skipCpt = 0;
         int unexistCpt = 0;
         int gramCpt = 0;
 
-        float *wordVec = new wordVec[layer1_size](0);
+        Parameters::real *wordVec = new Parameters::real[layer1_size]();
 
         ifstream input(train_file, ios_base::in | ios_base::binary);
         ofstream output(output_file, ios_base::out | ios_base::binary);
@@ -56,7 +59,7 @@ namespace Word2Vec
             cout << "Number of words: " << (cptWord + 1) << "\n";
 
         /* reset */
-        input.seekg(0):
+        input.seekg(0);
 
         for (size_t i = 0; i < voc.hashSize(); ++i)
             hashset[i] = -1;
@@ -71,11 +74,11 @@ namespace Word2Vec
         for (size_t i = 0; i < layer1_size; ++i)
         {
             if (binary)
-                output.write(reinterpret_cast<char *>, sizeof(float));
+                output.write(reinterpret_cast<char *>(&wordVec[i]), sizeof(Parameters::real));
             else
                 output << wordVec[i] << " ";
         }
-        output.write('\n');
+        output.put('\n');
         fprintf(fo, "\n");
 
         hash = voc.getWordHash("</s>");
@@ -87,10 +90,7 @@ namespace Word2Vec
 
         while (!input.eof())
         {
-            if (hashbang)
-                voc.readWordHashBang(word, input);
-            else
-                voc.readWord(word, input);
+            voc.readWord(word, input);
 
             hash = voc.getWordHash(word);
 
@@ -107,7 +107,7 @@ namespace Word2Vec
 
             if (lenWord > ngram)
             {
-                while (getGrams(word, grama, gramCpt, ngram, overlap, position, hashbang))
+                while (getGrams(word, grama, gramCpt, ngram, overlap, position))
                 {
                     indGram = voc.search(grama);
                     if (indGram > -1)
@@ -137,7 +137,7 @@ namespace Word2Vec
                             truncGram(syn0, layer1_size, ngram, offset, wordVec, lenWord, gramCpt);
                             break;
                         case 5:
-                            sumFreqGram(syn0, layer1_size, offset, wordVec, voc.get(indGram).cn);
+                            sumFreqGram(syn0, layer1_size, offset, wordVec, voc.get(indGram).cn());
                     }
 
                     ++gramCpt;
@@ -151,44 +151,33 @@ namespace Word2Vec
             }
             else
             {
-                indGram = SearchVocab(voc,word);
+                indGram = voc.search(word);
 
-                if(indGram > -1){
-
+                if (indGram > -1)
+                {
                     offset = indGram * layer1_size;
-                    for (i=0; i < layer1_size;i++)
-                    {
-                        wordVec[i]+=syn0[offset+i];
-                    }
-
+                    for (size_t i = 0; i < layer1_size; ++i)
+                        wordVec[i] += syn0[offset + i];
                 }
-                else{
-                    unexistCpt++;
+                else
+                {
+                    ++unexistCpt;
                 }
             }
 
             hashset[hash] = 1;		
             gramCpt = 0;
 
-            //removes #bangs
-            if(hashbang > 0)
-            {
-                for(i=1;i<lenWord;i++){
-                    word[i-1]=word[i];
-                }
-                word[lenWord-2]='\0';
-            }
-            
             output << word << " ";
-            for (i = 0; i < layer1_size; ++i)
+            for (size_t i = 0; i < layer1_size; ++i)
             {
                 if (binary)
-                    out.write(&wordVec[i], sizeof(float));
+                    output.write(reinterpret_cast<char *>(&wordVec[i]), sizeof(Parameters::real));
                 else
-                    out << wordVec[i] << " ";
+                    output << wordVec[i] << " ";
             }
 
-            out.write('\n');
+            output.put('\n');
             
             ++cptWord;
         }

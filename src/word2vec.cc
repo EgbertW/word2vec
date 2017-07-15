@@ -21,14 +21,14 @@
 * http://yinwenpeng.wordpress.com/2013/09/26/hierarchical-softmax-in-neural-network-language-model/
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <pthread.h>
+#include <libword2vec/Parameters.h>
+#include <libword2vec/Vocabulary.h>
+#include <libword2vec/WordModel.h>
 
-#include "vocab.h"
-#include "trainingThread.h"
+#include <memory>
+
+using namespace std;
+using namespace Word2Vec;
 
 static int syntax()
 {
@@ -96,64 +96,69 @@ static int ArgPos(char *str, int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-
 	if (argc == 1)
         return syntax();
 
-	char train_file[MAX_STRING];
-    train_file[0] = 0;
+    Word2Vec::Parameters params;
+    Word2Vec::Parameters::real alpha = 0.025;
+    params.alpha = &alpha;
 
-	char output_file[MAX_STRING];
-    output_file[0] = 0;
+	string train_file;
+	string save_vocab_file;
+    string read_vocab_file;
+    string output_file;
 
-	char save_vocab_file[MAX_STRING];
-    save_vocab_file[0] = 0;
+    size_t min_count;
 
-	char read_vocab_file[MAX_STRING] = 0;
-	read_vocab_file[0] = 0;
+    bool cbow = false;
 
     int arg_pos;
-	if ((arg_pos = ArgPos((char *)"-size", argc, argv)) > 0)layer1_size = atoi(argv[arg_pos + 1]);
-	if ((arg_pos = ArgPos((char *)"-train", argc, argv)) > 0) strcpy(train_file, argv[arg_pos + 1]);
-	if ((arg_pos = ArgPos((char *)"-save-vocab", argc, argv)) > 0) strcpy(save_vocab_file, argv[arg_pos + 1]);
-	if ((arg_pos = ArgPos((char *)"-read-vocab", argc, argv)) > 0) strcpy(read_vocab_file, argv[arg_pos + 1]);
-	if ((arg_pos = ArgPos((char *)"-debug", argc, argv)) > 0) debug_mode = atoi(argv[arg_pos + 1]);
-	if ((arg_pos = ArgPos((char *)"-binary", argc, argv)) > 0) binary = atoi(argv[arg_pos + 1]);
-	if ((arg_pos = ArgPos((char *)"-cbow", argc, argv)) > 0) cbow = atoi(argv[arg_pos + 1]);
+	if ((arg_pos = ArgPos((char *)"-size", argc, argv)) > 0) params.layer1_size = atoi(argv[arg_pos + 1]);
+	if ((arg_pos = ArgPos((char *)"-train", argc, argv)) > 0) train_file = argv[arg_pos + 1];
+	if ((arg_pos = ArgPos((char *)"-save-vocab", argc, argv)) > 0) save_vocab_file = argv[arg_pos + 1];
+	if ((arg_pos = ArgPos((char *)"-read-vocab", argc, argv)) > 0) read_vocab_file = argv[arg_pos + 1];
+	if ((arg_pos = ArgPos((char *)"-debug", argc, argv)) > 0) params.debug_mode = atoi(argv[arg_pos + 1]);
+	if ((arg_pos = ArgPos((char *)"-binary", argc, argv)) > 0) params.binary = atoi(argv[arg_pos + 1]);
+	if ((arg_pos = ArgPos((char *)"-cbow", argc, argv)) > 0) cbow = atoi(argv[arg_pos + 1]) != 0;
 	if ((arg_pos = ArgPos((char *)"-alpha", argc, argv)) > 0) alpha = atof(argv[arg_pos + 1]);
-	if ((arg_pos = ArgPos((char *)"-output", argc, argv)) > 0) strcpy(output_file, argv[arg_pos + 1]);
-	if ((arg_pos = ArgPos((char *)"-window", argc, argv)) > 0) window = atoi(argv[arg_pos + 1]);
-	if ((arg_pos = ArgPos((char *)"-sample", argc, argv)) > 0) sample = atof(argv[arg_pos + 1]);
-	if ((arg_pos = ArgPos((char *)"-hs", argc, argv)) > 0) hs = atoi(argv[arg_pos + 1]);
-	if ((arg_pos = ArgPos((char *)"-negative", argc, argv)) > 0) negative = atoi(argv[arg_pos + 1]);
-	if ((arg_pos = ArgPos((char *)"-threads", argc, argv)) > 0) num_threads = atoi(argv[arg_pos + 1]);
+	if ((arg_pos = ArgPos((char *)"-output", argc, argv)) > 0) output_file = argv[arg_pos + 1];
+	if ((arg_pos = ArgPos((char *)"-window", argc, argv)) > 0) params.window = atoi(argv[arg_pos + 1]);
+	if ((arg_pos = ArgPos((char *)"-sample", argc, argv)) > 0) params.sample = atof(argv[arg_pos + 1]);
+	if ((arg_pos = ArgPos((char *)"-hs", argc, argv)) > 0) params.hs = atoi(argv[arg_pos + 1]) == 1;
+	if ((arg_pos = ArgPos((char *)"-negative", argc, argv)) > 0) params.negative = atoi(argv[arg_pos + 1]);
+	if ((arg_pos = ArgPos((char *)"-threads", argc, argv)) > 0) params.num_threads = atoi(argv[arg_pos + 1]);
 	if ((arg_pos = ArgPos((char *)"-min-count", argc, argv)) > 0) min_count = atoi(argv[arg_pos + 1]);
-	if ((arg_pos = ArgPos((char *)"-classes", argc, argv)) > 0) classes = atoi(argv[arg_pos + 1]);
+	if ((arg_pos = ArgPos((char *)"-classes", argc, argv)) > 0) params.classes = atoi(argv[arg_pos + 1]);
+
+    params.train_type = cbow ? Word2Vec::CBOW : Word2Vec::SKIP;
+    params.output_file = output_file.c_str();
+    params.train_file = train_file.c_str();
 	
 	/**
 	Fixed starting Parameters:
 	**/
 	size_t vocab_hash_size =  30000000;  // Maximum 30 * 0.7 = 21M words in the vocabulary
-	size_t vocab_max_size = 1000;
 
 	//1: init vocabulary
-	Vocabulary vocab(vocab_hash_size);
+	shared_ptr<Vocabulary> vocab = make_shared<Vocabulary>(vocab_hash_size);
 
 	//2: load vocab
-	if (read_vocab_file[0] != 0)
-		file_size = vocab.read(read_vocab_file, train_file,min_count);
+	if (not read_vocab_file.empty())
+		params.file_size = vocab->read(read_vocab_file, train_file, min_count);
 	else
-		file_size = vocab.readTrainFile(train_file, min_count);
+		params.file_size = vocab->readTrainFile(train_file, min_count);
 
-	if (save_vocab_file[0] != 0)
-		vocab.save(save_vocab_file);
+	if (not save_vocab_file.empty())
+		vocab->save(save_vocab_file);
 
-	if (output_file[0] == 0) //nowhere to output => quit
+	if (not output_file.empty()) //nowhere to output => quit
 		return 0;
 
+
 	//3: train_model
-    WordModel model(vocab);
-    model.train(vocab);
+    params.vocabulary = vocab;
+    WordModel model(params);
+    model.train();
 
 	return 0;
 }

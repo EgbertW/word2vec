@@ -47,11 +47,11 @@ namespace Word2Vec
             int *d_table;
 
         public:
-            WordModel();
+            WordModel(Parameters params);
             ~WordModel();
 
-            void initUnigramTable(Vocabulary &voc);
-            void train(Vocabulary &voc);
+            void initUnigramTable();
+            void train();
     };
 }
 

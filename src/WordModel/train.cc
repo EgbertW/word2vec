@@ -3,6 +3,10 @@
 #include <memory>
 #include <fstream>
 #include <iostream>
+#include <cmath>
+#include <vector>
+
+#include <libword2vec/TrainingThread.h>
 
 using namespace std;
 
@@ -38,22 +42,21 @@ using namespace std;
 
 namespace Word2Vec
 {
-    void WordModel::train(Vocabulary &voc)
+    void WordModel::train()
     {
-        d_params.starting_alpha = alpha;
-        initNet();
+        d_params.starting_alpha = *d_params.alpha;
 
         if (d_params.negative > 0)
             initUnigramTable();
 
-        start = clock();
+        d_params.start = clock();
 
-        vector<TrainingThread> threads;
+        vector<shared_ptr<TrainingThread>> threads;
 
-        for (size_t a = 0; a < num_threads; ++a)
+        for (size_t a = 0; a < d_params.num_threads; ++a)
         {
             Parameters params = d_params;
-            if (cbow)
+            if (d_cbow)
                 params.train_type = TrainType::CBOW;
             else
                 params.train_type = TrainType::SKIP;
@@ -62,13 +65,13 @@ namespace Word2Vec
             threads.push_back(shared_ptr<TrainingThread>(new TrainingThread(params)));
         }
 
-        for (auto thread : threads)
-            thread.join();
+        for (auto ptr = threads.begin(); ptr != threads.end(); ++ptr)
+            (*ptr)->join();
 
-        if (debug_mode > 0)
-            out << "Training Ended !\n";
+        if (d_params.debug_mode > 0)
+            cout << "Training Ended !\n";
 
-        ofstream output(output_file, ios_base::out | ios_base::binary);
+        ofstream output(d_params.output_file, ios_base::out | ios_base::binary);
 
         if (d_params.classes == 0)
         {
@@ -78,18 +81,20 @@ namespace Word2Vec
             {
                 output << d_params.vocabulary->get(a).word() << ' ';
 
-                if (binary)
+                if (d_params.binary)
                 {
-                    for (size_t b = 0; b < layer1_size; ++b)
-                        output.write(reinterpret_cast<char *>(
-                            &(d_params.syn0[a * d_params.layer1_size + b]),
+                    for (size_t b = 0; b < d_params.layer1_size; ++b)
+                    { 
+                        output.write(
+                            reinterpret_cast<char *>(&(d_params.syn0[a * d_params.layer1_size + b])),
                             sizeof(real)
                         );
+                    }
                 }
                 else
                 {
-                    for (size_t b = 0; b < layer1_size; ++b)
-                        output << syn0[a * d_params.layer1_size + b] << ' ';
+                    for (size_t b = 0; b < d_params.layer1_size; ++b)
+                        output << d_params.syn0[a * d_params.layer1_size + b] << ' ';
                 }
 
                 output << endl;
@@ -98,10 +103,12 @@ namespace Word2Vec
         else
         {
             // Run K-means on the word vectors
-            int clcn = classes, iter = 10, closeid;
+            int clcn = d_params.classes;
+            int iter = 10;
+            int closeid;
             int *cl = new int[d_params.vocabulary->size()];
-            int *centcn = new int[classes];
-            real *cent = new real[classes * d_params.layer1_size];
+            int *centcn = new int[d_params.classes];
+            real *cent = new real[d_params.classes * d_params.layer1_size];
 
             for (size_t a = 0; a < d_params.vocabulary->size(); ++a)
                 cl[a] = a % clcn;
@@ -124,16 +131,16 @@ namespace Word2Vec
 
                 for (size_t b = 0; b < clcn; ++b)
                 {
-                    closev = 0;
+                    real closev = 0;
 
                     for (size_t c = 0; c < d_params.layer1_size; ++c)
                     {
-                        cent[layer1_size * b + c] /= centcn[b];
+                        cent[d_params.layer1_size * b + c] /= centcn[b];
                         closev += cent[d_params.layer1_size * b + c] * cent[d_params.layer1_size * b + c];
                     }
 
-                    real closev = sqrt(closev);
-                    for (size_t c = 0; c < layer1_size; ++c)
+                    closev = sqrt(closev);
+                    for (size_t c = 0; c < d_params.layer1_size; ++c)
                         cent[d_params.layer1_size * b + c] /= closev;
                 }
 
@@ -160,7 +167,7 @@ namespace Word2Vec
             // Save the K-means classes
             for (size_t a = 0; a < d_params.vocabulary->size(); ++a)
             {
-                output << d_params.vocubulary->get(a).word() << ' ' << cl[a] << ' ';
+                output << d_params.vocabulary->get(a).word() << ' ' << cl[a] << ' ';
 
                 for (size_t b = 0; b < d_params.layer1_size; ++b)
                     output << d_params.syn0[a * d_params.layer1_size + b];

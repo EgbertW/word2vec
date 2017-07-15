@@ -1,7 +1,8 @@
-#include "trainingthread.h"
+#include "trainingthread.ih"
 
 #include <ctime>
 #include <memory>
+#include <fstream>
 using namespace std;
 
 namespace Word2Vec
@@ -16,7 +17,7 @@ namespace Word2Vec
 
         size_t sentence_length = 0;
         size_t sentence_position = 0;
-        size_t next_random = d_params.id;
+        size_t next_random = d_params.threadNumber;
 
         int start = 0;
 
@@ -28,10 +29,10 @@ namespace Word2Vec
 
         ifstream input(d_params.train_file, ios_base::in | ios_base::binary);
 
-        input.seekg(d_params.file_size / (long long)d_params.num_threads * d_params.id);
+        input.seekg(d_params.file_size / (long long)d_params.num_threads * d_params.threadNumber);
 
         while (true)
-        t
+        {
             if (word_count - last_word_count > 10000)
             {
                 (*d_params.word_count_actual) += word_count - last_word_count;
@@ -59,7 +60,7 @@ namespace Word2Vec
 
                 while (not input.eof())
                 {
-                    int word = voc.readWordIndex(input); 
+                    int word = voc->readWordIndex(input); 
 
                     if (word == -1)
                         continue;
@@ -121,7 +122,7 @@ namespace Word2Vec
             for (size_t c = 0; c < d_params.layer1_size; ++c)
                 neu1[c] = 0;
 
-            for (size_t c = 0; c < d_parmas.layer1_size; ++c)
+            for (size_t c = 0; c < d_params.layer1_size; ++c)
                 neu1e[c] = 0;
 
             next_random = next_random * (unsigned long long)25214903917 + 11;
@@ -165,13 +166,13 @@ namespace Word2Vec
                             f = d_params.expTable[(int)((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2))];
 
                             // 'g' is the gradient multiplied by the learning rate
-                            g = (1 - voc->get(word).codeAt(d) - f) * (*d_params.alpha);
+                            real g = (1 - voc->get(word).codeAt(d) - f) * (*d_params.alpha);
                             // Propagate errors output -> hidden
                             for (size_t c = 0; c < d_params.layer1_size; ++c)
                                 neu1e[c] += g * d_params.syn1[c + l2];
                             // Learn weights hidden -> output
                             for (size_t c = 0; c < d_params.layer1_size; ++c)
-                                syn1[c + l2] += g * d_params.syn0[c + l1];
+                                d_params.syn1[c + l2] += g * d_params.syn0[c + l1];
                         }
                     }
 
@@ -210,11 +211,11 @@ namespace Word2Vec
                                 f += d_params.syn0[c + l1] * d_params.syn1neg[c + l2];
 
                             if (f > d_params.max_exp)
-                                g = (label - 1) * (*alpha);
+                                g = (label - 1) * (*d_params.alpha);
                             else if (f < -d_params.max_exp)
-                                g = (label - 0) * (*alpha);
+                                g = (label - 0) * (*d_params.alpha);
                             else
-                                g = (label - expTable[(int)((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2))]) * (*d_params.alpha);
+                                g = (label - d_params.expTable[(int)((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2))]) * (*d_params.alpha);
                             
                             for (size_t c = 0; c < d_params.layer1_size; ++c)
                                 neu1e[c] += g * d_params.syn1neg[c + l2];

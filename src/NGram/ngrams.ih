@@ -1,3 +1,4 @@
-#include "vocab.h"
-#include "ngram_tools.h"
-#include <math.h>
+#include <libword2vec/Vocabulary.h>
+#include <libword2vec/NGrams.h>
+#include <libword2vec/Parameters.h>
+#include <cmath>

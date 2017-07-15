@@ -9,8 +9,10 @@ include_directories(include)
 add_executable(word2vec src/word2vec.cc)
 
 target_link_libraries(word2vec
-    Vocabulary.o
     WordModel.o
+    TrainingThread.o
+    Vocabulary.o
+    NGrams.o
     -pthread
 )
 
@@ -54,11 +56,10 @@ target_link_libraries(word2vec
 # 	pushd ${BIN_DIR} && rm -rf word2vec word2phrase distance word-analogy compute-accuracy; popd
 
 add_library(
-    ngrams.o
+    NGrams.o
     src/NGram/addGramPosition.cc
     src/NGram/getGrams.cc
     src/NGram/gramVocToWordVec.cc
-    src/NGram/mergeAndSaveVectors.cc
     src/NGram/minMaxGram.cc
     src/NGram/sumFreqGram.cc
     src/NGram/sumGram.cc
@@ -82,7 +83,7 @@ add_library(
     src/Vocabulary/getWordHash.cc
     src/Vocabulary/learnNGramFromFile.cc
     src/Vocabulary/readTrainFile.cc
-    src/Vocabulary/readVocabulary.cc
+    src/Vocabulary/read.cc
     src/Vocabulary/readWord.cc
     src/Vocabulary/readWordIndex.cc
     src/Vocabulary/reduce.cc

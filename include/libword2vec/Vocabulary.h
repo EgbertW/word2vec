@@ -5,8 +5,6 @@
 
 #define DEBUG_MODE 2
 #define MAX_STRING 100
-#define MAX_SENTENCE_LENGTH 1000
-#define MAX_CODE_LENGTH 40
 
 #include "VocabularyWord.h"
 
@@ -57,16 +55,16 @@ namespace Word2Vec
             void searchAndAdd(char const *word);
 
             /*Create a vocab from train file - returns file size*/
-            long long readTrainFile(char const * train_file, size_t min_count);
+            long long readTrainFile(std::string const &train_file, size_t min_count);
 
             /*Create a vocab of ngram from train file returns file size*/
-            long long learnNGramFromFile(char const *train_file, size_t min_count, int ngram, int position, bool overlap);
+            long long learnNGramFromFile(std::string const &train_file, size_t min_count, int ngram, int position, bool overlap);
 
             /*Saves vocab & Occurences*/
-            void save(char const *save_vocab_file) const;
+            void save(std::string const &save_vocab_file) const;
 
             /* Reads a saved vocab file */
-            long long read(char const *read_vocab_file, char const *train_file, size_t min_count);
+            long long read(std::string const &read_vocab_file, std::string const &train_file, size_t min_count);
 
             /* Create binary Huffman tree using the word counts
              Frequent words will have short uniqe binary codes*/
@@ -83,6 +81,9 @@ namespace Word2Vec
 
             /** The numer of words to train on */
             size_t nTrainWords() const;
+
+            /** Get the hash size */
+            size_t hashSize() const;
     };
 
     inline VocabularyWord const &Vocabulary::get(size_t index) const
@@ -98,6 +99,11 @@ namespace Word2Vec
     inline size_t Vocabulary::size() const
     {
         return d_vocabulary.size();
+    }
+
+    inline size_t Vocabulary::hashSize() const
+    {
+        return d_vocab_hash_size;
     }
 
     inline size_t Vocabulary::nTrainWords() const

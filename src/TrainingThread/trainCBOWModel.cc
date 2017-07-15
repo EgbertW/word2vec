@@ -2,11 +2,12 @@
 
 #include <ctime>
 #include <memory>
+#include <fstream>
 using namespace std;
 
 namespace Word2Vec
 {
-    void TrainingThread::TrainCBOWModel()
+    void TrainingThread::trainCBOWModel()
     {
         shared_ptr<Vocabulary> voc = d_params.vocabulary;
 
@@ -14,9 +15,9 @@ namespace Word2Vec
         size_t last_word_count = 0;
         size_t sen[MAX_SENTENCE_LENGTH + 1];
 
-        size_t sentence_length = 0,
+        size_t sentence_length = 0;
         size_t sentence_position = 0;
-        size_t next_random = d_params.id;
+        size_t next_random = d_params.threadNumber;
 
         int start = 0;
 
@@ -28,7 +29,7 @@ namespace Word2Vec
 
         ifstream input(d_params.train_file, ios_base::in | ios_base::binary);
 
-        input.seekg(d_params.file_size / (long long)d_params.num_threads * d_params.id);
+        input.seekg(d_params.file_size / (long long)d_params.num_threads * d_params.threadNumber);
 
         while (true)
         {
@@ -59,7 +60,7 @@ namespace Word2Vec
 
                 while (not input.eof())
                 {
-                    int word = voc.readWordIndex(input);
+                    int word = voc->readWordIndex(input);
                     
                     if (word == -1)
                         continue;
@@ -225,6 +226,7 @@ namespace Word2Vec
 
                     for (size_t c = 0; c < d_params.layer1_size; ++c)
                         d_params.syn1neg[c + l2] += g * neu1[c];
+                }
             }
 
             // hidden -> in

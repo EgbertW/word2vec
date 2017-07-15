@@ -1,5 +1,5 @@
-#include <TrainingThread.h>
-#include <NGrams.h>
+#include <libword2vec/TrainingThread.h>
+#include <libword2vec/NGrams.h>
 
 #include <cstdlib>
 #include <cstdio>

@@ -1,12 +1,13 @@
-#include "trainingthread.h"
+#include "trainingthread.ih"
 
 #include <ctime>
 #include <memory>
+#include <fstream>
 using namespace std;
 
 namespace Word2Vec
 {
-    void *TrainingThread::TrainCBOWModelGram()
+    void TrainingThread::trainCBOWModelGram()
     {
         shared_ptr<Vocabulary> voc = d_params.vocabulary;
 
@@ -14,21 +15,21 @@ namespace Word2Vec
         size_t last_word_count = 0;
         size_t sen[MAX_SENTENCE_LENGTH + 1];
 
-        size_t sentence_length = 0,
+        size_t sentence_length = 0;
         size_t sentence_position = 0;
-        size_t next_random = (long long)d_params.id;
+        size_t next_random = d_params.threadNumber;
 
         int start = 0;
         int end;
         char wordToGram[MAX_STRING];
-        char gram[ngram + 3];
+        char gram[d_params.ngram + 3];
 
         real *neu1 = new real[d_params.layer1_size];
         real *neu1e = new real[d_params.layer1_size];
 
         ifstream input(d_params.train_file, ios_base::in | ios_base::binary);
 
-        input.seekg(d_params.file_size / (long long)d_params.num_threads * d_params.id);
+        input.seekg(d_params.file_size / (long long)d_params.num_threads * d_params.threadNumber);
 
         while (true)
         {
@@ -56,17 +57,19 @@ namespace Word2Vec
             {
                 wordToGram[0] = '\0'; //so length is 0
                 int end = 0;
+                size_t i = 0;
 
                 while (not input.eof())
                 {
                     if (end == 0)
                     {
-                        voc.readWord(wordToGram, input);
+                        voc->readWord(wordToGram, input);
                         i = 0;
                     }
 
-                    end = getGrams(wordToGram,gram,i, ngram, overlap, position);
-
+                    end = getGrams(wordToGram, gram, i, d_params.ngram, d_params.overlap, d_params.position);
+                    
+                    int word;
                     if (end == -1)
                         word = voc->search(wordToGram);
                     else
@@ -225,13 +228,14 @@ namespace Word2Vec
 
                     for (size_t c = 0; c < d_params.layer1_size; ++c)
                         d_params.syn1neg[c + l2] += g * neu1[c];
+                }
             }
 
             // hidden -> in
             for (size_t a = b; a < d_params.window * 2 + 1 - b; ++a) 
             {
                 if (a != d_params.window)
-
+                {
                     size_t c = sentence_position - d_params.window + a;
 
                     if (c < 0 || c >= sentence_length)
@@ -259,6 +263,6 @@ namespace Word2Vec
         input.close();
 
         delete [] neu1;
-        delete [] nue1e;
+        delete [] neu1e;
     }
 }

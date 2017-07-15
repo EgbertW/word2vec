@@ -7,7 +7,7 @@ using namespace std;
 namespace Word2Vec
 {
     /* Create a vocab of ngram from train file */
-    long long Vocabulary::learnNGramFromFile(char const *train_file, size_t min_count, int ngram, int position, bool overlap)
+    long long Vocabulary::learnNGramFromFile(string const &train_file, size_t min_count, int ngram, int position, bool overlap)
     {
         char word[MAX_STRING];
         char *gram = new char[ngram * 2 + 4]; //possibility to merge a ngram with another one < ngram size + position (3 tokens) + '\0'

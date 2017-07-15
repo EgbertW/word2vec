@@ -7,7 +7,7 @@ using namespace std;
 namespace Word2Vec
 {
     /*Create a vocab from train file*/
-    long long Vocabulary::readTrainFile(char const *train_file, size_t min_count)
+    long long Vocabulary::readTrainFile(string const &train_file, size_t min_count)
     {
         char word[MAX_STRING];
         

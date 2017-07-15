@@ -2,11 +2,12 @@
 
 #include <ctime>
 #include <memory>
+#include <fstream>
 using namespace std;
 
 namespace Word2Vec
 {
-    void *TrainSKIPModelThreadGram(void *arg)
+    void TrainingThread::trainSKIPModelGram()
     {
         shared_ptr<Vocabulary> voc = d_params.vocabulary;
 
@@ -14,21 +15,21 @@ namespace Word2Vec
         size_t last_word_count = 0;
         size_t sen[MAX_SENTENCE_LENGTH + 1];
 
-        size_t sentence_length = 0,
+        size_t sentence_length = 0;
         size_t sentence_position = 0;
-        size_t next_random = d_params.id;
+        size_t next_random = d_params.threadNumber;
 
         int start = 0;
-        int end = ngram - 1;
+        int end = d_params.ngram - 1;
         char wordToGram[MAX_STRING];
-        char gram[ngram + 3];
+        char gram[d_params.ngram + 3];
 
         real *neu1 = new real[d_params.layer1_size];
         real *neu1e = new real[d_params.layer1_size];
 
         ifstream input(d_params.train_file, ios_base::in | ios_base::binary);
 
-        input.seekg(d_params.file_size / (long long)d_params.num_threads * d_params.id);
+        input.seekg(d_params.file_size / (long long)d_params.num_threads * d_params.threadNumber);
 
         while (true)
         {
@@ -56,21 +57,23 @@ namespace Word2Vec
             {
                 wordToGram[0] = '\0'; //so length is 0
                 end = 0;
+                size_t i = 0;
+                int word;
 
                 while (not input.eof())
                 {
                     if (end == 0)
                     {
-                        voc.ReadWord(wordToGram, input);
+                        voc->readWord(wordToGram, input);
                         i = 0;
                     }
 
-                    end = getGrams(wordToGram, gram, i, ngram, overlap, position);
+                    end = getGrams(wordToGram, gram, i, d_params.ngram, d_params.overlap, d_params.position);
 
                     if (end == -1)
-                        word = voc.search(wordToGram);
+                        word = voc->search(wordToGram);
                     else
-                        word = voc.search(gram);
+                        word = voc->search(gram);
 
                     ++word_count;
                     ++i;
@@ -132,19 +135,19 @@ namespace Word2Vec
             // in -> hidden
             for (size_t a = b; a < d_params.window * 2 + 1 - b; ++a)
             {
-                if (a != window)
+                if (a != d_params.window)
                 {
-                    c = sentence_position - d_params.window + a;
+                    size_t c = sentence_position - d_params.window + a;
 
-                    if (c < 0 || c >= sentence_length))
+                    if (c < 0 || c >= sentence_length)
                         continue;
 
-                    last_word = sen[c];
+                    size_t last_word = sen[c];
 
                     if (last_word == -1)
                         continue;
 
-                    l1 = last_word * d_params.layer1_size; //word index
+                    size_t l1 = last_word * d_params.layer1_size; //word index
 
                     for (c = 0; c < d_params.layer1_size; ++c)
                         neu1e[c] = 0;
@@ -152,10 +155,10 @@ namespace Word2Vec
                     // HIERARCHICAL SOFTMAX
                     if (d_params.hs)
                     {
-                        for (size_t d = 0; d < voc->vocab[word].codelen; ++d)
+                        for (size_t d = 0; d < voc->get(word).codeLen(); ++d)
                         {
                             real f = 0;
-                            size_t l2 = voc->get(word).pointAt(d) * d_params.player1_size; //other words
+                            size_t l2 = voc->get(word).pointAt(d) * d_params.layer1_size; //other words
                             // Propagate hidden -> output
                             for (c = 0; c < d_params.layer1_size; ++c)
                                 f += d_params.syn0[c + l1] * d_params.syn1[c + l2];
@@ -182,7 +185,7 @@ namespace Word2Vec
                         for (size_t d = 0; d < d_params.negative + 1; ++d)
                         {
                             size_t target;
-                            size_t word;
+                            size_t label;
                             if (d == 0)
                             {
                                 target = word;
@@ -202,10 +205,11 @@ namespace Word2Vec
                             }
 
                             size_t l2 = target * d_params.layer1_size;
-                            f = 0;
+                            real f = 0;
+                            real g;
 
-                            for (size_t c = 0; c < layer1_size; ++c)
-                                f += syn0[c + l1] * syn1neg[c + l2];
+                            for (size_t c = 0; c < d_params.layer1_size; ++c)
+                                f += d_params.syn0[c + l1] * d_params.syn1neg[c + l2];
 
                             if (f > d_params.max_exp)
                                 g = (label - 1) * (*d_params.alpha);
@@ -215,7 +219,7 @@ namespace Word2Vec
                                 g = (label - d_params.expTable[(int)((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2))]) * (*d_params.alpha);
                             
                             for (size_t c = 0; c < d_params.layer1_size; ++c)
-                                neu1e[c] += g * syn1neg[c + l2];
+                                neu1e[c] += g * d_params.syn1neg[c + l2];
                             
                             for (size_t c = 0; c < d_params.layer1_size; ++c)
                                 d_params.syn1neg[c + l2] += g * d_params.syn0[c + l1];

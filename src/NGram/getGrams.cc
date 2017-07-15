@@ -2,7 +2,7 @@
 
 namespace Word2Vec
 {
-    int getGrams(char *word, char *gram, size_t index, size_t size, bool overlap, bool position, bool hashbang)
+    int getGrams(char *word, char *gram, size_t index, size_t size, int overlap, int position)
     {
         size_t lenWord = strlen(word);
         size_t lastIndex;
@@ -33,7 +33,7 @@ namespace Word2Vec
             gram[size] = 0;
 
             if (position > 0)
-                addGramPosition(word, gram, size, index, position, overlap, hashbang);
+                addGramPosition(word, gram, size, index, position, overlap);
         }
         else
         {
@@ -58,7 +58,7 @@ namespace Word2Vec
 
 
             if (position)
-                addGramPosition(word, gram, size, index, position, overlap, hashbang);
+                addGramPosition(word, gram, size, index, position, overlap);
         }
         
 

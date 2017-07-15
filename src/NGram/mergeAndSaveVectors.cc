@@ -5,6 +5,8 @@ using namespace std;
 
 namespace Word2Vec
 {
+    // TODO: What is this used for?!
+
     void mergeAndSaveVectors()
     {
         int indWord;

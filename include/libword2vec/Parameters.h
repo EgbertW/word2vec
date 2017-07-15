@@ -3,6 +3,9 @@
 
 #include <memory>
 
+#define MAX_SENTENCE_LENGTH 100
+#define MAX_CODE_LENGTH 40
+
 namespace Word2Vec
 {
     // Forward declaration
@@ -20,7 +23,7 @@ namespace Word2Vec
     {
         typedef float real;
 
-        TrainType type;
+        TrainType train_type;
 
         std::shared_ptr<Vocabulary> vocabulary;
 
@@ -37,7 +40,7 @@ namespace Word2Vec
         real starting_alpha;
         real sample; 
 
-        int d_debug_mode = 2;
+        int debug_mode = 2;
         int threadNumber;
         int num_threads;
         int hs = 1;
@@ -53,11 +56,15 @@ namespace Word2Vec
         bool negative = 0;
         bool position;
         bool overlap;
+        bool binary; 
 
         char const *train_file;
+        char const *output_file;
         clock_t start;
 
         const int d_table_size = 1e8;
+
+        size_t classes;
     };
 }
 #endif

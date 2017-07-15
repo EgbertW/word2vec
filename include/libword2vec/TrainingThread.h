@@ -1,10 +1,6 @@
 #ifndef TRAIN_THREADS
 #define TRAIN_THREADS
 
-// TODO: evaluate defines and includes
-#define MAX_SENTENCE_LENGTH 100
-#define MAX_CODE_LENGTH 40
-
 // Validated includes
 #include "WordModel.h"
 #include "Vocabulary.h"
@@ -37,7 +33,7 @@ namespace Word2Vec
 
             void run()
             {
-                switch (d_params.type)
+                switch (d_params.train_type)
                 {
                     case CBOW:
                         trainCBOWModel();
@@ -49,20 +45,19 @@ namespace Word2Vec
                         trainSKIPModel();
                         return;
                     case SKIPGram:
-                        trainSKIPMOdelGram();
-                        return
+                        trainSKIPModelGram();
+                        return;
                     default:
-                        throw runtime_error("Invalid train type");
+                        throw std::runtime_error("Invalid train type");
                 }
             }
 
         private:
-            void *TrainCBOWModelThread();
-            void *TrainCBOWModelThreadGram();
-            void *TrainSKIPModelThread();
-            void *TrainSKIPModelThreadGram();
-        }
-    }
+            void trainCBOWModel();
+            void trainCBOWModelGram();
+            void trainSKIPModel();
+            void trainSKIPModelGram();
+    };
 }
 
 

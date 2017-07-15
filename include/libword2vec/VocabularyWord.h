@@ -5,6 +5,8 @@
 #include <string>
 #include <stdexcept>
 
+#include "Parameters.h"
+
 namespace Word2Vec
 {
     class VocabularyWord
@@ -82,7 +84,7 @@ namespace Word2Vec
                 return d_point;
             }
 
-            int getPointAt(size_t index)
+            int pointAt(size_t index)
             {
                 if (index > MAX_CODE_LENGTH)
                     throw std::range_error("Out of range");

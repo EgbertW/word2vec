@@ -2,19 +2,20 @@
 #include <random>
 #include <memory>
 
+using namespace std;
+
 namespace Word2Vec
 {
-    void WordModel::WordModel(shared_ptr<Vocabulary> voc)
-    :
-        d_vocabulary(voc)
+    WordModel::WordModel(Parameters params)
     {
         d_params.table = nullptr;
         d_params.syn0 = new real[d_params.layer1_size * d_params.vocabulary->size()];
-        d_params.syn1 = d_params.hs ? new real[d_params.layer1_size * d_params.vocabulary->size()](0) : nullptr;
-        d_params.syn1neg = d_params.negative > 0 ? new real[d_params.layer1_size * d_params.vocabulary->size()](0) : nullptr;
+        d_params.syn1 = d_params.hs ? new real[d_params.layer1_size * d_params.vocabulary->size()]() : nullptr;
+        d_params.syn1neg = d_params.negative > 0 ? new real[d_params.layer1_size * d_params.vocabulary->size()]() : nullptr;
 
-        random_device rd;
-        mt19937 generator(rd);
+        random_device r;
+        seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
+        mt19937 generator(seed);
         uniform_real_distribution<> distribution(-0.5, 0.5);
         for (size_t b = 0; b < d_params.layer1_size; ++b)
             for (size_t a = 0; a < d_params.vocabulary->size(); ++a)

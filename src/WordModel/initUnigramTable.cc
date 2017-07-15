@@ -4,7 +4,7 @@
 
 namespace Word2Vec
 {
-    void WordModel::initUnigramTable(Vocabulary &voc)
+    void WordModel::initUnigramTable()
     {
         long long train_words_pow = 0;
         real d1;

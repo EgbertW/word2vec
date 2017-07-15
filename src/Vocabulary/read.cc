@@ -8,7 +8,7 @@ using namespace std;
 namespace Word2Vec
 {
     /*Reads a saved vocabulary file*/
-    long long Vocabulary::read(char const *read_vocab_file, char const *train_file, size_t min_count)
+    long long Vocabulary::read(string const &read_vocab_file, string const &train_file, size_t min_count)
     {
         char word[MAX_STRING];
 
