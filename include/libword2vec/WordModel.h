@@ -6,19 +6,19 @@
 #define EXP_TABLE_SIZE = 1000;
 
 #include "Vocabulary.h"
+#include "Parameters.h"
+#include <memory>
 
 namespace Word2Vec
 {
     class WordModel
     {
         public:
-            typedef float real; // Precision of float numbers
-            std::shared_ptr<Vocabulary> d_vocabulary;
+            typedef Parameters::real real;
+            Parameters d_params;
 
-            int d_binary = 0;
-            int d_cbow = 0;
-            int d_debug_mode = 2;
-            int d_window = 5,;
+            bool d_binary = 0;
+            bool d_cbow = 0;
             int d_min_count = 5;
             int d_num_threads = 1;
             int d_layer1_size = 100;
@@ -34,7 +34,7 @@ namespace Word2Vec
             //syn0 = vectors table
             real *d_syn0;
             real *d_syn1;
-            real *d_syn1neg
+            real *d_syn1neg;
             real *d_expTable;
 
             clock_t start;
@@ -45,7 +45,14 @@ namespace Word2Vec
             const int d_table_size = 1e8;
 
             int *d_table;
-    }
+
+        public:
+            WordModel();
+            ~WordModel();
+
+            void initUnigramTable(Vocabulary &voc);
+            void train(Vocabulary &voc);
+    };
 }
 
 #endif

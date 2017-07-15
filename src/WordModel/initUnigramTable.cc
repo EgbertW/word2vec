@@ -1,5 +1,7 @@
 #include "wordmodel.ih"
 
+#include <cmath>
+
 namespace Word2Vec
 {
     void WordModel::initUnigramTable(Vocabulary &voc)
@@ -7,26 +9,28 @@ namespace Word2Vec
         long long train_words_pow = 0;
         real d1;
         real power = 0.75;
-        d_table = new int[table_size];
+        if (d_params.table != nullptr)
+            delete [] d_table;
+        d_params.table = new int[d_table_size];
 
-        for (size_t a = 0; a < d_vocabulary->size(); ++a)
-            train_words_pow += pow(d_vocabulary->get(a).cn(), power); //occurences^power
+        for (size_t a = 0; a < d_params.vocabulary->size(); ++a)
+            train_words_pow += pow(d_params.vocabulary->get(a).cn(), power); //occurences^power
 
-        i = 0;
-        d1 = pow(d_vocabulary->get(i).cn(), power) / (real)train_words_pow; //normalize
+        size_t i = 0;
+        d1 = pow(d_params.vocabulary->get(i).cn(), power) / (real)train_words_pow; //normalize
 
-        for (size_t a = 0; a < table_size; ++a)
+        for (size_t a = 0; a < d_params.table_size; ++a)
         {
-            table[a] = i;
+            d_params.table[a] = i;
 
-            if (a / (real)table_size > d1)
+            if (a / (real)d_params.table_size > d1)
             {
                 ++i;
-                d1 += pow(d_vocabulary->get(i).cn(), power) / (real)train_words_pow;
+                d1 += pow(d_params.vocabulary->get(i).cn(), power) / (real)train_words_pow;
             }
 
-            if (i >= d_vocabulary->size())
-                i = d_vocabulary->size() - 1;
+            if (i >= d_params.vocabulary->size())
+                i = d_params.vocabulary->size() - 1;
         }
     }
 }

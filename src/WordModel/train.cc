@@ -1,141 +1,154 @@
 #include "wordmodel.ih"
 
+#include <memory>
+#include <fstream>
+#include <iostream>
+
+using namespace std;
+
+// paramstruct
+//                 voc,
+//                 syn0,
+//                 syn1,
+//                 syn1neg,
+//                 expTable,
+//                 (&alpha),
+//                 starting_alpha,
+//                 sample,
+//                 (&word_count_actual),
+//                 table,
+//                 a,
+//                 num_threads,
+//                 file_size,
+//                 MAX_STRING,
+//                 EXP_TABLE_SIZE,
+//                 0,
+//                 layer1_size,
+//                 window,
+//                 MAX_EXP,
+//                 hs,
+//                 negative,
+//                 table_size,
+//                 0,
+//                 0,
+//                 0,
+//                 train_file
+//             };
+
+
 namespace Word2Vec
 {
     void WordModel::train(Vocabulary &voc)
     {
-        long a, b, c, d;
-        FILE *fo;
-        pthread_t *pt = (pthread_t *)malloc(num_threads * sizeof(pthread_t));
+        d_params.starting_alpha = alpha;
+        initNet();
 
-        starting_alpha = alpha;
-        InitNet(voc);
-
-        if (negative > 0)
-            InitUnigramTable(voc);
+        if (d_params.negative > 0)
+            initUnigramTable();
 
         start = clock();
 
-        threadParameters* params; 
+        vector<TrainingThread> threads;
 
-        for (a = 0; a < num_threads; a++)
+        for (size_t a = 0; a < num_threads; ++a)
         {
-            params = CreateParametersStruct(
-                voc,
-                syn0,
-                syn1,
-                syn1neg,
-                expTable,
-                (&alpha),
-                starting_alpha,
-                sample,
-                (&word_count_actual),
-                table,
-                a,
-                num_threads,
-                file_size,
-                MAX_STRING,
-                EXP_TABLE_SIZE,
-                0,
-                layer1_size,
-                window,
-                MAX_EXP,
-                hs,
-                negative,
-                table_size,
-                0,
-                0,
-                0,
-                train_file
-                );
-
-            /*NB: The parameters struct are freed by each thread.*/
-
-            if(cbow)
-                pthread_create(&pt[a], NULL, TrainCBOWModelThread, (void *)params);
+            Parameters params = d_params;
+            if (cbow)
+                params.train_type = TrainType::CBOW;
             else
-                pthread_create(&pt[a], NULL, TrainSKIPModelThread, (void *)params);
+                params.train_type = TrainType::SKIP;
+
+            params.threadNumber = a;
+            threads.push_back(shared_ptr<TrainingThread>(new TrainingThread(params)));
         }
 
-        for (a = 0; a < num_threads; a++)
-            pthread_join(pt[a], NULL);
+        for (auto thread : threads)
+            thread.join();
 
-        if(debug_mode > 0)
-            printf("Training Ended !\n");
+        if (debug_mode > 0)
+            out << "Training Ended !\n";
 
-        fo = fopen(output_file, "wb");
+        ofstream output(output_file, ios_base::out | ios_base::binary);
 
-        if (classes == 0)
+        if (d_params.classes == 0)
         {
             // Save the word vectors
-            fprintf(fo, "%lld %d\n", voc->vocab_size, layer1_size);
-            for (a = 0; a < voc->vocab_size; a++) {
-                fprintf(fo, "%s ", voc->vocab[a].word);
+            output << d_params.vocabulary->size() << ' ' << d_params.layer1_size << '\n';
+            for (size_t a = 0; a < d_params.vocabulary->size(); ++a)
+            {
+                output << d_params.vocabulary->get(a).word() << ' ';
 
                 if (binary)
-                    for (b = 0; b < layer1_size; b++)
-                        fwrite(&syn0[a * layer1_size + b], sizeof(real), 1, fo);
+                {
+                    for (size_t b = 0; b < layer1_size; ++b)
+                        output.write(reinterpret_cast<char *>(
+                            &(d_params.syn0[a * d_params.layer1_size + b]),
+                            sizeof(real)
+                        );
+                }
                 else
-                    for (b = 0; b < layer1_size; b++)
-                        fprintf(fo, "%lf ", syn0[a * layer1_size + b]);
+                {
+                    for (size_t b = 0; b < layer1_size; ++b)
+                        output << syn0[a * d_params.layer1_size + b] << ' ';
+                }
 
-                fprintf(fo, "\n");
+                output << endl;
             }
         }
         else
         {
             // Run K-means on the word vectors
             int clcn = classes, iter = 10, closeid;
-            int *centcn = (int *)malloc(classes * sizeof(int));
-            int *cl = (int *)calloc(voc->vocab_size, sizeof(int));
-            real closev, x;
-            real *cent = (real *)calloc(classes * layer1_size, sizeof(real));
+            int *cl = new int[d_params.vocabulary->size()];
+            int *centcn = new int[classes];
+            real *cent = new real[classes * d_params.layer1_size];
 
-            for (a = 0; a < voc->vocab_size; a++)
+            for (size_t a = 0; a < d_params.vocabulary->size(); ++a)
                 cl[a] = a % clcn;
 
-            for (a = 0; a < iter; a++)
+            for (size_t a = 0; a < iter; ++a)
             {
-                for (b = 0; b < clcn * layer1_size; b++)
+                for (size_t b = 0; b < clcn * d_params.layer1_size; ++b)
                     cent[b] = 0;
 
-                for (b = 0; b < clcn; b++)
+                for (size_t b = 0; b < clcn; ++b)
                     centcn[b] = 1;
 
-                for (c = 0; c < voc->vocab_size; c++)
+                for (size_t c = 0; c < d_params.vocabulary->size(); ++c)
                 {
-
-                    for (d = 0; d < layer1_size; d++)
-                        cent[layer1_size * cl[c] + d] += syn0[c * layer1_size + d];
+                    for (size_t d = 0; d < d_params.layer1_size; ++d)
+                        cent[d_params.layer1_size * cl[c] + d] += d_params.syn0[c * d_params.layer1_size + d];
 
                     centcn[cl[c]]++;
                 }
 
-                for (b = 0; b < clcn; b++)
+                for (size_t b = 0; b < clcn; ++b)
                 {
                     closev = 0;
 
-                    for (c = 0; c < layer1_size; c++)
+                    for (size_t c = 0; c < d_params.layer1_size; ++c)
                     {
                         cent[layer1_size * b + c] /= centcn[b];
-                        closev += cent[layer1_size * b + c] * cent[layer1_size * b + c];
+                        closev += cent[d_params.layer1_size * b + c] * cent[d_params.layer1_size * b + c];
                     }
 
-                    closev = sqrt(closev);
-                    for (c = 0; c < layer1_size; c++)
-                        cent[layer1_size * b + c] /= closev;
+                    real closev = sqrt(closev);
+                    for (size_t c = 0; c < layer1_size; ++c)
+                        cent[d_params.layer1_size * b + c] /= closev;
                 }
 
-                for (c = 0; c < voc->vocab_size; c++)
+                for (size_t c = 0; c < d_params.vocabulary->size(); ++c)
                 {
-                    closev = -10;
-                    closeid = 0;
-                    for (d = 0; d < clcn; d++) {
-                        x = 0;
-                        for (b = 0; b < layer1_size; b++)
-                            x += cent[layer1_size * d + b] * syn0[c * layer1_size + b];
+                    real closev = -10;
+                    int closeid = 0;
+                    for (size_t d = 0; d < clcn; ++d)
+                    {
+                        real x = 0;
+                        for (size_t b = 0; b < d_params.layer1_size; ++b)
+                            x += cent[d_params.layer1_size * d + b] * d_params.syn0[c * d_params.layer1_size + b];
 
-                        if (x > closev) {
+                        if (x > closev)
+                        {
                             closev = x;
                             closeid = d;
                         }
@@ -143,25 +156,23 @@ namespace Word2Vec
                     cl[c] = closeid;
                 }
             }
+
             // Save the K-means classes
-
-            for (a = 0; a < voc->vocab_size; a++)
+            for (size_t a = 0; a < d_params.vocabulary->size(); ++a)
             {
-                fprintf(fo, "%s %d ", voc->vocab[a].word, cl[a]);
+                output << d_params.vocubulary->get(a).word() << ' ' << cl[a] << ' ';
 
-                for (b = 0; b < layer1_size; b++){
-                    fprintf(fo, "%lf ", syn0[a * layer1_size + b]);
-                }
-                fprintf(fo, "\n");
+                for (size_t b = 0; b < d_params.layer1_size; ++b)
+                    output << d_params.syn0[a * d_params.layer1_size + b];
+                    
+                output << endl;
             }
 
-            free(centcn);
-            free(cent);
-            free(cl);
-            
+            delete [] centcn;
+            delete [] cent;
+            delete [] cl;
         }
 
-        fclose(fo);
-        free(pt);
+        output.close();
     }
 }
