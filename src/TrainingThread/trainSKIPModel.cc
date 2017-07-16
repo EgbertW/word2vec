@@ -17,7 +17,7 @@ namespace Word2Vec
 
         size_t sentence_length = 0;
         size_t sentence_position = 0;
-        size_t next_random = d_params.threadNumber;
+        unsigned long long next_random = (unsigned long long)d_params.threadNumber;
 
         int start = 0;
 
@@ -191,7 +191,7 @@ namespace Word2Vec
                             }
                             else
                             {
-                                next_random = next_random * (size_t)25214903917 + 11;
+                                next_random = next_random * (unsigned long long)25214903917 + 11;
                                 target = d_params.table[(next_random >> 16) % d_params.table_size];
 
                                 if (target == 0)

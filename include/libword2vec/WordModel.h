@@ -42,8 +42,6 @@ namespace Word2Vec
             int d_hs = 1;
             int d_negative = 0;
 
-            const int d_table_size = 1e8;
-
             int *d_table;
 
         public:
