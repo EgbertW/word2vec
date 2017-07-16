@@ -18,9 +18,7 @@ namespace Word2Vec
         // Sort the vocabulary and keep </s> at the first position
         std::stable_sort(d_vocabulary.begin() + 1, d_vocabulary.end());
 
-        for (size_t a = 0; a < d_vocab_hash_size; ++a)
-            d_vocab_hash[a] = -1;
-
+        fill(d_vocab_hash, d_vocab_hash + d_vocab_hash_size, -1);
         d_train_words = 0;
         size_t pre_size = d_vocabulary.size();
 

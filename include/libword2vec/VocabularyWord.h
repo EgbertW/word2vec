@@ -167,7 +167,7 @@ namespace Word2Vec
                 return d_codelen;
             }
 
-            inline bool operator<(VocabularyWord const &rhs)
+            inline bool operator<(VocabularyWord const &rhs) const
             {
                 return rhs.d_cn < d_cn;
             }

@@ -19,12 +19,10 @@ namespace Word2Vec
             exit(1);
         }
 
-        for (size_t a = 0; a < d_vocab_hash_size; ++a)
-            d_vocab_hash[a] = -1;
-
+        fill(d_vocab_hash, d_vocab_hash + d_vocab_hash_size, -1);
         d_vocabulary.clear();
         size_t i = 0;
-        while (not input.eof())
+        while (true)
         {
             readWord(word, input);
 
@@ -34,6 +32,13 @@ namespace Word2Vec
             size_t a = addWord(word);
             size_t cn;
             input >> cn;
+            char eol = input.get();
+            if (eol != 10)
+            {
+                cout << "Unexpected character " << eol << endl;
+                exit(1);
+            }
+
             get(a).setCn(cn);
             ++i;
         }

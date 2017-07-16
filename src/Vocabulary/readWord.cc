@@ -1,6 +1,7 @@
 #include "vocabulary.ih"
 
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 

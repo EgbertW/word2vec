@@ -4,7 +4,10 @@ project(libword2vec)
 add_definitions("-std=c++11 -O3 -s")
 set(CMAKE_BUILD_TYPE Debug)
 
+find_package(Boost 1.38.0)
+
 include_directories(include)
+include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(word2vec src/word2vec.cc)
 
