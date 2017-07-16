@@ -11,7 +11,6 @@ namespace Word2Vec
     {
         int i = search(word);
 
-
         if (i == -1)
         {
             i = addWord(word);

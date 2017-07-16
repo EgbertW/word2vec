@@ -1,6 +1,7 @@
 #include "vocabulary.ih"
 
 #include <fstream>
+#include <boost/format.hpp>
 
 using namespace std;
 
@@ -12,7 +13,7 @@ namespace Word2Vec
         ofstream output(save_vocab_file, ios_base::out | ios_base::binary);
 
         for (auto ptr : d_vocabulary)
-            output << ptr.word() << ' ' << ptr.cn() << '\n';
+            output << boost::format("%s %lld\n") % ptr.word() % ptr.cn();
         
         output.close();
     }
