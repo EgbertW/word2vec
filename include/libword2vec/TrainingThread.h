@@ -10,25 +10,33 @@
 
 namespace Word2Vec
 {
-    class TrainingThread: public std::thread
+    class TrainingThread
     {
         public:
             typedef WordModel::real real;
         
         private:
             Parameters d_params;
+            std::thread d_thread;
 
         public:
             TrainingThread(Parameters parameters)
             :
                 d_params(parameters)
             {
-                std::thread(&TrainingThread::run, this);  
+                d_thread = std::thread(&TrainingThread::run, this);
             }
 
             ~TrainingThread()
             {
-                join();
+                if (d_thread.joinable())
+                    d_thread.join();
+            }
+
+            void join()
+            {
+                if (d_thread.joinable())
+                    d_thread.join();
             }
 
             void run()

@@ -1,8 +1,17 @@
-word2vec
+libword2vec
 ========
 
-Original from https://code.google.com/p/word2vec/
+This is a C++ port of the repositry https://github.com/dav/word2vec, previously copied from https://code.google.com/p/word2vec/.
 
+It is based on the modifications done in https://github.com/adamwulf/word2vec
+
+It is a work in progress. Reading vocabulary and training works using the demo-word.sh script but expect some issues.
+
+Goal is to make a more encapsulated library to programmatically train word vectors and extract word distances, for use in other systems.
+
+=============
+Original text
+============
 [I've copied it](https://github.com/dav/word2vec)to a github project so I can apply and track community patches for my needs (starting with capability for Mac OS X compilation).
 
 Tools for computing distributed represention of words (and Grams) included from the [cedias](https://github.com/cedias/word2vec) repo.

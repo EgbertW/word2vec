@@ -28,6 +28,7 @@
 #include <memory>
 #include <iostream>
 
+
 using namespace std;
 using namespace Word2Vec;
 
@@ -100,9 +101,9 @@ int main(int argc, char **argv)
 	if (argc == 1)
         return syntax();
 
-    Word2Vec::Parameters params;
-    Word2Vec::Parameters::real alpha = 0.025;
-    params.alpha = &alpha;
+    Parameters params;
+    params.alpha = make_shared<Parameters::real>(0.025);
+    params.word_count_actual = make_shared<size_t>(0);
 
 	string train_file;
 	string save_vocab_file;
@@ -121,7 +122,7 @@ int main(int argc, char **argv)
 	if ((arg_pos = ArgPos((char *)"-debug", argc, argv)) > 0) params.debug_mode = atoi(argv[arg_pos + 1]);
 	if ((arg_pos = ArgPos((char *)"-binary", argc, argv)) > 0) params.binary = atoi(argv[arg_pos + 1]);
 	if ((arg_pos = ArgPos((char *)"-cbow", argc, argv)) > 0) cbow = atoi(argv[arg_pos + 1]) != 0;
-	if ((arg_pos = ArgPos((char *)"-alpha", argc, argv)) > 0) alpha = atof(argv[arg_pos + 1]);
+	if ((arg_pos = ArgPos((char *)"-alpha", argc, argv)) > 0) *params.alpha = atof(argv[arg_pos + 1]);
 	if ((arg_pos = ArgPos((char *)"-output", argc, argv)) > 0) output_file = argv[arg_pos + 1];
 	if ((arg_pos = ArgPos((char *)"-window", argc, argv)) > 0) params.window = atoi(argv[arg_pos + 1]);
 	if ((arg_pos = ArgPos((char *)"-sample", argc, argv)) > 0) params.sample = atof(argv[arg_pos + 1]);
@@ -157,8 +158,6 @@ int main(int argc, char **argv)
 
 	if (output_file.empty()) //nowhere to output => quit
 		return 0;
-
-    cout << "Start training model\n";
 
 	//3: train_model
     params.vocabulary = vocab;

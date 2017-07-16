@@ -4,16 +4,28 @@ namespace Word2Vec
 {
     WordModel::~WordModel()
     {
-        if (d_syn0 != nullptr)
-            delete [] d_syn0;
+        if (d_params.syn0 != nullptr)
+        {
+            delete [] d_params.syn0;
+            d_params.syn0 = nullptr;
+        }
 
-        if (d_syn1 != nullptr)
-            delete [] d_syn1;
+        if (d_params.syn1 != nullptr)
+        {
+            delete [] d_params.syn1;
+            d_params.syn1 = nullptr;
+        }
 
-        if (d_syn1neg != nullptr)
-            delete [] d_syn1neg;
+        if (d_params.syn1neg != nullptr)
+        {
+            delete [] d_params.syn1neg;
+            d_params.syn1neg = nullptr;
+        }
 
-        if (d_table != nullptr)
-            delete [] d_table;
+        if (d_params.table != nullptr)
+        {
+            delete [] d_params.table;
+            d_params.table = nullptr;
+        }
     }
 }

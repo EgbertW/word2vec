@@ -5,6 +5,8 @@
 
 #define MAX_SENTENCE_LENGTH 100
 #define MAX_CODE_LENGTH 40
+#define MAX_STRING 100
+#define DEBUG_MODE 2
 
 namespace Word2Vec
 {
@@ -32,39 +34,38 @@ namespace Word2Vec
         real *syn1;
         real *syn1neg;
         real *expTable;
-        real *alpha;
         int *table;
-        size_t *word_count_actual;
+
+        // Shared parameters
+        std::shared_ptr<real> alpha;
+        std::shared_ptr<size_t> word_count_actual;
 
         // Parameters
-        real starting_alpha;
-        real sample; 
+        real starting_alpha = 0.025;
+        real sample = 0; 
 
-        int debug_mode = 2;
-        int threadNumber;
-        int num_threads;
+        size_t debug_mode = DEBUG_MODE;
+        size_t threadNumber = 0;
+        size_t num_threads = 1;
         int hs = 1;
-        int file_size;
-        int max_string;
-        int exp_table_size;
-        int ngram;
-        int max_exp;
+        size_t file_size = 0;
+        int max_string = MAX_STRING;
+        int exp_table_size = 1000;
+        int ngram = 1;
+        int max_exp = 6;
         int window = 5;
-        int layer1_size;
-        int table_size;
+        int layer1_size = 100;
+        int table_size = 1e8;
+        size_t classes = 0;
 
         bool negative = 0;
         bool position;
         bool overlap;
-        bool binary; 
+        bool binary = false; 
 
         char const *train_file;
         char const *output_file;
         clock_t start;
-
-        const int d_table_size = 1e8;
-
-        size_t classes;
     };
 }
 #endif

@@ -1,4 +1,7 @@
 #include "vocabulary.ih"
+#include <iostream>
+
+using namespace std;
 
 namespace Word2Vec
 {
@@ -15,12 +18,13 @@ namespace Word2Vec
             count[a] = a < d_vocabulary.size() ? get(a).cn() : 1e15;
 
         // Following algorithm constructs the Huffman tree by adding one node at a time
-        size_t pos1 = d_vocabulary.size() - 1; //end of word occurences
-        size_t pos2 = d_vocabulary.size(); //start of other end
+        long long pos1 = d_vocabulary.size() - 1; //end of word occurences
+        long long pos2 = d_vocabulary.size(); //start of other end
         long long min1i = 0;
         long long min2i = 0;
 
-        for (size_t a = 0; a < d_vocabulary.size() - 1; ++a) { //vocab is already sorted by frequency
+        for (size_t a = 0; a < d_vocabulary.size() - 1; ++a)
+        { //vocab is already sorted by frequency
             // First, find two smallest nodes 'min1, min2'
             if (pos1 >= 0)
             {
@@ -33,14 +37,14 @@ namespace Word2Vec
                 else
                 {
                     min1i = pos2;
-                    --pos2;
+                    ++pos2;
                 }
 
             }
             else
             {
                 min1i = pos2;
-                --pos2;
+                ++pos2;
             }
 
             if (pos1 >= 0)
@@ -78,6 +82,11 @@ namespace Word2Vec
 
             do
             {
+                if (i > MAX_CODE_LENGTH)
+                {
+                    cerr << "Out of range value for i: " << i << endl;
+                    exit(1);
+                }
                 code[i] = binary[b];
                 point[i] = b;
                 ++i;

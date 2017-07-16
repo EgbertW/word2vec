@@ -6,39 +6,11 @@
 #include <cmath>
 #include <vector>
 
+#include <boost/format.hpp>
+
 #include <libword2vec/TrainingThread.h>
 
 using namespace std;
-
-// paramstruct
-//                 voc,
-//                 syn0,
-//                 syn1,
-//                 syn1neg,
-//                 expTable,
-//                 (&alpha),
-//                 starting_alpha,
-//                 sample,
-//                 (&word_count_actual),
-//                 table,
-//                 a,
-//                 num_threads,
-//                 file_size,
-//                 MAX_STRING,
-//                 EXP_TABLE_SIZE,
-//                 0,
-//                 layer1_size,
-//                 window,
-//                 MAX_EXP,
-//                 hs,
-//                 negative,
-//                 table_size,
-//                 0,
-//                 0,
-//                 0,
-//                 train_file
-//             };
-
 
 namespace Word2Vec
 {
@@ -62,6 +34,7 @@ namespace Word2Vec
                 params.train_type = TrainType::SKIP;
 
             params.threadNumber = a;
+
             threads.push_back(shared_ptr<TrainingThread>(new TrainingThread(params)));
         }
 
@@ -76,10 +49,10 @@ namespace Word2Vec
         if (d_params.classes == 0)
         {
             // Save the word vectors
-            output << d_params.vocabulary->size() << ' ' << d_params.layer1_size << '\n';
+            output << boost::format("%lld %d\n") % d_params.vocabulary->size() % d_params.layer1_size;
             for (size_t a = 0; a < d_params.vocabulary->size(); ++a)
             {
-                output << d_params.vocabulary->get(a).word() << ' ';
+                output << boost::format("%s ") % d_params.vocabulary->get(a).word();
 
                 if (d_params.binary)
                 {
@@ -94,15 +67,16 @@ namespace Word2Vec
                 else
                 {
                     for (size_t b = 0; b < d_params.layer1_size; ++b)
-                        output << d_params.syn0[a * d_params.layer1_size + b] << ' ';
+                        output << boost::format("%lf ") % d_params.syn0[a * d_params.layer1_size + b];
                 }
 
-                output << endl;
+                output << '\n';
             }
         }
         else
         {
             // Run K-means on the word vectors
+			cout << "Running k-means\n";
             int clcn = d_params.classes;
             int iter = 10;
             int closeid;
@@ -181,5 +155,6 @@ namespace Word2Vec
         }
 
         output.close();
+        cout << "Training finished, results saved to " << d_params.output_file << endl;
     }
 }

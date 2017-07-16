@@ -3,9 +3,6 @@
 
 #include <vector>
 
-#define DEBUG_MODE 2
-#define MAX_STRING 100
-
 #include "VocabularyWord.h"
 
 namespace Word2Vec

@@ -11,6 +11,8 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(word2vec src/word2vec.cc)
 
+add_executable(distance src/Distance/Distance.cc)
+
 target_link_libraries(word2vec
     WordModel.o
     TrainingThread.o

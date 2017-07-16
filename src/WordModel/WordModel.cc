@@ -2,11 +2,14 @@
 #include <random>
 #include <memory>
 
+#include <iostream>
 using namespace std;
 
 namespace Word2Vec
 {
     WordModel::WordModel(Parameters params)
+    :
+        d_params(params)
     {
         d_params.table = nullptr;
         d_params.syn0 = new real[d_params.layer1_size * d_params.vocabulary->size()];
@@ -14,12 +17,12 @@ namespace Word2Vec
         d_params.syn1neg = d_params.negative > 0 ? new real[d_params.layer1_size * d_params.vocabulary->size()]() : nullptr;
 
         random_device r;
-        seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
-        mt19937 generator(seed);
-        uniform_real_distribution<> distribution(-0.5, 0.5);
+        mt19937 generator(r());
+        real extent = 0.5 / d_params.layer1_size;
+        uniform_real_distribution<> distribution(-extent, extent);
         for (size_t b = 0; b < d_params.layer1_size; ++b)
             for (size_t a = 0; a < d_params.vocabulary->size(); ++a)
-                d_params.syn0[a * d_params.layer1_size + b] = distribution(generator) / d_params.layer1_size;
+                d_params.syn0[a * d_params.layer1_size + b] = distribution(generator);
 
         d_params.vocabulary->createBinaryTree();
 
