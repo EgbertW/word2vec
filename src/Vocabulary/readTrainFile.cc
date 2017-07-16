@@ -26,7 +26,7 @@ namespace Word2Vec
         d_train_words = 0;
         addWord("</s>");
 
-        while (not input.eof())
+        while (true) //not input.eof())
         {
             readWord(word, input);
             searchAndAdd(word);
@@ -37,11 +37,21 @@ namespace Word2Vec
             ++d_train_words;
 
             if ((DEBUG_MODE > 1) && (d_train_words % 100000 == 0))
-                cout << d_train_words << endl;
+                cout << d_train_words / 1000 << "K\r" << flush;
         }
 
+        cout << "Total words read: " << d_train_words << endl;
+        size_t total = 0;
+        for (VocabularyWord &w : d_vocabulary)
+            total += w.cn();
+
+
+        cout << "Sum of words: " << total << endl;
+
+        cout << "Sorting...\n";
         sort(min_count);
 
+        cout << "Done sorting\n";
         if (DEBUG_MODE > 1)
         {
             cout << "Vocabulary size: " << d_vocabulary.size() << endl;

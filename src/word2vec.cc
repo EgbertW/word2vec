@@ -26,6 +26,7 @@
 #include <libword2vec/WordModel.h>
 
 #include <memory>
+#include <iostream>
 
 using namespace std;
 using namespace Word2Vec;
@@ -108,7 +109,7 @@ int main(int argc, char **argv)
     string read_vocab_file;
     string output_file;
 
-    size_t min_count;
+    size_t min_count = 5;
 
     bool cbow = false;
 
@@ -143,17 +144,28 @@ int main(int argc, char **argv)
 	shared_ptr<Vocabulary> vocab = make_shared<Vocabulary>(vocab_hash_size);
 
 	//2: load vocab
+    cout << "Start loading vocabulary\n";
 	if (not read_vocab_file.empty())
+    {
+        cout << "Reading vocabulary file\n";
 		params.file_size = vocab->read(read_vocab_file, train_file, min_count);
+    }
 	else
+    {
+        cout << "Reading train file\n";
 		params.file_size = vocab->readTrainFile(train_file, min_count);
+    }
 
 	if (not save_vocab_file.empty())
+    {
+        cout << "Saving vocabulary file\n";
 		vocab->save(save_vocab_file);
+    }
 
 	if (not output_file.empty()) //nowhere to output => quit
 		return 0;
 
+    cout << "Start training model\n";
 
 	//3: train_model
     params.vocabulary = vocab;

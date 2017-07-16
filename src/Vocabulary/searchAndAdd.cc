@@ -11,6 +11,7 @@ namespace Word2Vec
     {
         int i = search(word);
 
+
         if (i == -1)
         {
             i = addWord(word);
@@ -29,6 +30,6 @@ namespace Word2Vec
 
         // TODO: Check should not be needed
         if (search(word) == -1)
-            cerr << word << "wasn't properly imported, dafuq?" << endl;
+            cerr << word << " wasn't properly imported, dafuq?" << endl;
     }
 }

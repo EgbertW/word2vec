@@ -3,7 +3,6 @@
 
 #include <cstring>
 #include <string>
-#include <stdexcept>
 
 #include "Parameters.h"
 
@@ -12,39 +11,57 @@ namespace Word2Vec
     class VocabularyWord
     {
         private:
-            long long d_cn; // times of occurence in train file
+            size_t d_cn; // times of occurence in train file
             int *d_point;
-            std::string d_word;
-            std::string d_code;
+            char *d_word;
+            char *d_code;
             size_t d_codelen;
 
+            bool ma = false;
+            bool mc = false;
+
         public:
-            VocabularyWord()
+            VocabularyWord(char const *word)
             :
                 d_cn(0),
-                d_point(new int[MAX_CODE_LENGTH])
-            {}
+                d_point(new int[MAX_CODE_LENGTH]),
+                d_code(nullptr),
+                d_codelen(MAX_CODE_LENGTH)
+            {
+                unsigned l = strlen(word) + 1;
+                if (l > MAX_STRING)
+                    l = MAX_STRING;
+                d_word = new char[l];
+                strncpy(d_word, word, l);
+                d_word[l - 1] = 0;
+            }
             
             VocabularyWord(VocabularyWord const &rhs)
             :
                 d_cn(rhs.d_cn),
                 d_point(new int[MAX_CODE_LENGTH]),
-                d_word(rhs.d_word),
                 d_code(rhs.d_code)
             {
                 memcpy(d_point, rhs.d_point, MAX_CODE_LENGTH);
+                unsigned l = strlen(rhs.d_word) + 1;
+                d_word = new char[l];
+                std::strncpy(d_word, rhs.d_word, l);
+                d_word[l - 1] = 0;
             }
 
             VocabularyWord(VocabularyWord &&rhs)
             :
                 d_cn(rhs.d_cn),
                 d_point(rhs.d_point),
-                d_word(std::move(rhs.d_word)),
-                d_code(std::move(rhs.d_code))
+                d_word(rhs.d_word),
+                d_code(rhs.d_code)
             {
                 rhs.d_cn = 0;
+                rhs.d_word = nullptr;
+                rhs.d_code = nullptr;
                 rhs.d_point = nullptr;
                 rhs.d_codelen = 0;
+                rhs.mc = true;
             }
 
             VocabularyWord &operator=(VocabularyWord &&rhs)
@@ -52,9 +69,12 @@ namespace Word2Vec
                 d_cn = rhs.d_cn;
                 d_point = rhs.d_point;
                 rhs.d_point = nullptr;
-                d_word = std::move(rhs.d_word);
-                d_code = std::move(rhs.d_code);
+                d_word = rhs.d_word;
+                rhs.d_word = nullptr;
+                d_code = rhs.d_code;
+                rhs.d_code = nullptr;
                 d_codelen = rhs.d_codelen;
+                rhs.ma = true;
                 return *this;
             }
                 
@@ -62,98 +82,94 @@ namespace Word2Vec
             {
                 if (d_point != nullptr)
                     delete [] d_point;
+                if (d_word != nullptr)
+                    delete [] d_word;
+                if (d_code != nullptr)
+                    delete [] d_code;
             }
 
-            int cn() const
+            inline int cn() const
             {
                 return d_cn;
             }
 
-            void incCn()
+            inline void incCn()
             {
                 ++d_cn;
             }
 
-            void setCn(size_t cn)
+            inline void setCn(size_t cn)
             {
                 d_cn = cn;
             }
 
-            int const *point() const
+            inline int const *point() const
             {
                 return d_point;
             }
 
-            int pointAt(size_t index)
+            inline int pointAt(size_t index)
             {
-                if (index > MAX_CODE_LENGTH)
-                    throw std::range_error("Out of range");
                 return d_point[index];
             }
 
-            void setPointAt(size_t index, int value)
+            inline void setPointAt(size_t index, int value)
             {
-                if (index > MAX_CODE_LENGTH)
-                    throw std::range_error("Out of range");
                 d_point[index] = value;
             }
 
-            char const *word() const
+            inline char const *word() const
             {
-                return d_word.c_str();
+                return d_word;
             }
 
-            void setWord(char const *word)
+            inline char const *code() const
             {
-                d_word = word; 
+                return d_code;
             }
 
-            void setWord(std::string &word)
-            {
-                d_word = word;
-            }
-
-            char const *code() const
-            {
-                return d_code.c_str();
-            }
-
-            char codeAt(int pos) const
+            inline char codeAt(int pos) const
             {
                 return d_code[pos];
             }
 
-            void setCode(char const *code)
+            inline void setCode(char const *code)
             {
-                d_code = code;
+                if (d_code == nullptr)
+                    d_code = new char[d_codelen];
+                strncpy(d_code, code, d_codelen);
             }
 
-            void setCode(std::string &code)
+            inline void setCodeAt(size_t index, char code)
             {
-                d_code = code;
-            }
-
-            void setCodeAt(size_t index, char code)
-            {
-                if (index > d_codelen)
-                    throw std::range_error("Out of range");
+                if (d_code == nullptr)
+                    d_code = new char[d_codelen];
                 d_code[index] = code;
             }
 
-            void setCodeLen(size_t codelen)
+            inline void setCodeLen(size_t codelen)
             {
+                if (codelen != d_codelen && d_code != nullptr)
+                {
+                    char *new_ptr = new char[codelen];
+                    strncpy(new_ptr, d_code, d_codelen);
+                    delete [] d_code;
+                    d_code = new_ptr;
+                }
+                else
+                    d_code = new char[codelen];
+
                 d_codelen = codelen;
-                d_code.resize(codelen);
             }
 
-            size_t codeLen() const
+            inline size_t codeLen() const
             {
                 return d_codelen;
             }
 
-            bool operator<(VocabularyWord const &rhs)
+            inline bool operator<(VocabularyWord const &rhs)
             {
-                return rhs.d_cn - d_cn;
+                return rhs.d_cn < d_cn;
             }
     };
 }

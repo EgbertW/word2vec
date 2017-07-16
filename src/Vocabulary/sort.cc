@@ -10,7 +10,7 @@ namespace Word2Vec
     /* Sorts the vocabulary by frequency using word counts*/
     void Vocabulary::sort(size_t min_count)
     {
-        unsigned long long int a,size;
+        size_t size;
         unsigned int hash;
 
         if (DEBUG_MODE > 2)
@@ -18,22 +18,28 @@ namespace Word2Vec
         
         // Sort the vocabulary and keep </s> at the first position
         std::sort(d_vocabulary.begin(), d_vocabulary.end());
+        cout << "Sorted Vocabulary...\n" << flush;
 
-        for (a = 0; a < d_vocab_hash_size; a++)
+        for (size_t a = 0; a < d_vocab_hash_size; ++a)
             d_vocab_hash[a] = -1;
 
         size = d_vocabulary.size();
         d_train_words = 0;
 
-        auto ptr = d_vocabulary.begin();
-        while (ptr != d_vocabulary.end())
-        {
-            // Words occuring less than min_count times will be discarded from the vocab
-            if (ptr->cn() < min_count)
-                ptr = d_vocabulary.erase(ptr);
-            else
-                ++ptr;
-        }
+        size_t pre_size = d_vocabulary.size();
+
+        // Words occuring less than min_count times will be discarded from the vocab
+        d_vocabulary.erase(
+            remove_if(
+                d_vocabulary.begin(),
+                d_vocabulary.end(), 
+                [min_count](VocabularyWord const& e){ return e.cn() < min_count; }
+            ),
+            d_vocabulary.end()
+        );
+        size_t erased = pre_size - d_vocabulary.size();
+        cout << "Erased " << erased << " under min_county...\n" << flush;
+        cout << "Remaiing voc size: " << d_vocabulary.size() << endl;
 
         for (size_t a = 1; a < size; ++a)
         {

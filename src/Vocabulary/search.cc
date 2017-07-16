@@ -1,5 +1,7 @@
 #include "vocabulary.ih"
 
+#include <iostream>
+
 namespace Word2Vec
 {
     /* Returns position of a word in the vocabulary;
