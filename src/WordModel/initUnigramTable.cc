@@ -2,6 +2,9 @@
 
 #include <cmath>
 
+#include <iostream> 
+using namespace std;
+
 namespace Word2Vec
 {
     void WordModel::initUnigramTable()
@@ -9,7 +12,7 @@ namespace Word2Vec
         long long train_words_pow = 0;
         real power = 0.75;
         if (d_params.table != nullptr)
-            delete [] d_table;
+            delete [] d_params.table;
         d_params.table = new int[d_params.table_size];
 
         for (size_t a = 0; a < d_params.vocabulary->size(); ++a)
@@ -31,5 +34,11 @@ namespace Word2Vec
             if (i >= d_params.vocabulary->size())
                 i = d_params.vocabulary->size() - 1;
         }
+
+        cout << endl << endl << "-----" << endl;
+        for (size_t a = 0; a < d_params.table_size; ++a)
+            cout << d_params.table[a] << "\n";
+
+        cout << endl << "-----" << endl << endl;
     }
 }

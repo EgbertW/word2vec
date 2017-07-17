@@ -81,6 +81,9 @@ namespace Word2Vec
 
             /** Get the hash size */
             size_t hashSize() const;
+
+            /** Show a small summary */
+            void printSummary() const;
     };
 
     inline VocabularyWord const &Vocabulary::get(size_t index) const
@@ -106,6 +109,13 @@ namespace Word2Vec
     inline size_t Vocabulary::nTrainWords() const
     {
         return d_train_words;
+    }
+
+    inline void Vocabulary::printSummary() const
+    {
+        printf("Vocabulary hash size: %d\n", d_vocab_hash_size);
+        printf("Number of train words: %llu\n", d_train_words);
+        printf("Vocabulary vector size: %lu\n", d_vocabulary.size());
     }
 }
 #endif

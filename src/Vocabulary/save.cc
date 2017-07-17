@@ -12,8 +12,8 @@ namespace Word2Vec
     {
         ofstream output(save_vocab_file, ios_base::out | ios_base::binary);
 
-        for (auto ptr : d_vocabulary)
-            output << boost::format("%s %lld\n") % ptr.word() % ptr.cn();
+        for (VocabularyWord const &word : d_vocabulary)
+            output << boost::format("%s %lld\n") % word.word() % word.cn();
         
         output.close();
     }

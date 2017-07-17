@@ -28,9 +28,9 @@ namespace Word2Vec
         for (size_t a = 0; a < d_params.num_threads; ++a)
         {
             Parameters params = d_params;
-            if (d_cbow)
-                params.train_type = TrainType::CBOW;
-            else
+            //if (d_cbow)
+            //    params.train_type = TrainType::CBOW;
+            //else
                 params.train_type = TrainType::SKIP;
 
             params.threadNumber = a;
