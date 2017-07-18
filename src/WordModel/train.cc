@@ -17,6 +17,7 @@ namespace Word2Vec
     void WordModel::train()
     {
         d_params.starting_alpha = *d_params.alpha;
+        vector<real> &expTable = *d_params.expTable;
 
         if (d_params.negative > 0)
             initUnigramTable();
@@ -37,6 +38,8 @@ namespace Word2Vec
         if (d_params.debug_mode > 0)
             cout << "Training Ended !\n";
 
+        vector<real> &syn0(*d_params.syn0);
+
         ofstream output(d_params.output_file, ios_base::out | ios_base::binary);
 
         if (d_params.classes == 0)
@@ -52,7 +55,7 @@ namespace Word2Vec
                     for (size_t b = 0; b < d_params.layer1_size; ++b)
                     { 
                         output.write(
-                            reinterpret_cast<char *>(&(d_params.syn0[a * d_params.layer1_size + b])),
+                            reinterpret_cast<char *>(&(syn0[a * d_params.layer1_size + b])),
                             sizeof(real)
                         );
                     }
@@ -60,7 +63,7 @@ namespace Word2Vec
                 else
                 {
                     for (size_t b = 0; b < d_params.layer1_size; ++b)
-                        output << boost::format("%lf ") % d_params.syn0[a * d_params.layer1_size + b];
+                        output << boost::format("%lf ") % syn0[a * d_params.layer1_size + b];
                 }
 
                 output << '\n';
@@ -73,9 +76,9 @@ namespace Word2Vec
             int clcn = d_params.classes;
             int iter = 10;
             int closeid;
-            int *cl = new int[d_params.vocabulary->size()];
-            int *centcn = new int[d_params.classes];
-            real *cent = new real[d_params.classes * d_params.layer1_size];
+            vector<int> cl(d_params.vocabulary->size());
+            vector<int> centcn(d_params.classes);
+            vector<real> cent(d_params.classes * d_params.layer1_size);
 
             for (size_t a = 0; a < d_params.vocabulary->size(); ++a)
                 cl[a] = a % clcn;
@@ -91,7 +94,7 @@ namespace Word2Vec
                 for (size_t c = 0; c < d_params.vocabulary->size(); ++c)
                 {
                     for (size_t d = 0; d < d_params.layer1_size; ++d)
-                        cent[d_params.layer1_size * cl[c] + d] += d_params.syn0[c * d_params.layer1_size + d];
+                        cent[d_params.layer1_size * cl[c] + d] += syn0[c * d_params.layer1_size + d];
 
                     centcn[cl[c]]++;
                 }
@@ -119,7 +122,7 @@ namespace Word2Vec
                     {
                         real x = 0;
                         for (size_t b = 0; b < d_params.layer1_size; ++b)
-                            x += cent[d_params.layer1_size * d + b] * d_params.syn0[c * d_params.layer1_size + b];
+                            x += cent[d_params.layer1_size * d + b] * syn0[c * d_params.layer1_size + b];
 
                         if (x > closev)
                         {
@@ -137,14 +140,10 @@ namespace Word2Vec
                 output << d_params.vocabulary->get(a).word() << ' ' << cl[a] << ' ';
 
                 for (size_t b = 0; b < d_params.layer1_size; ++b)
-                    output << d_params.syn0[a * d_params.layer1_size + b];
+                    output << syn0[a * d_params.layer1_size + b];
                     
                 output << endl;
             }
-
-            delete [] centcn;
-            delete [] cent;
-            delete [] cl;
         }
 
         output.close();

@@ -27,13 +27,17 @@ namespace Word2Vec
         uniform_int_distribution<size_t> rng_vocab(1, voc->size() - 1);
         uniform_real_distribution<real> rng_real(0, 1);
 
+        vector<real> &syn0(*d_params.syn0);
+        vector<real> &expTable(*d_params.expTable);
+        vector<int> &table(*d_params.table);
+
         int start = 0;
 
 
 
 
-        real *neu1 = new real[d_params.layer1_size];
-        real *neu1e = new real[d_params.layer1_size];
+        vector<real> neu1(d_params.layer1_size);
+        vector<real> neu1e(d_params.layer1_size);
 
         ifstream input(d_params.train_file, ios_base::in | ios_base::binary);
 
@@ -130,8 +134,8 @@ namespace Word2Vec
                 continue;
             }
 
-            fill(neu1, neu1 + d_params.layer1_size, 0);
-            fill(neu1e, neu1e + d_params.layer1_size, 0);
+            fill(neu1.begin(), neu1.end(), 0);
+            fill(neu1e.begin(), neu1e.end(), 0);
 
             size_t b = rng_window(generator);
 
@@ -156,38 +160,40 @@ namespace Word2Vec
 
                     size_t l1 = last_word * d_params.layer1_size; //word index
 
-                    fill(neu1e, neu1e + d_params.layer1_size, 0);
+                    fill(neu1e.begin(), neu1e.end(), 0);
 
                     // HIERARCHICAL SOFTMAX
                     if (d_params.hs)
                     {
+                        vector<real> &syn1(*d_params.syn1);
                         for (size_t d = 0; d < voc->get(word).codeLen(); ++d)
                         {
                             real f = 0;
                             size_t l2 = voc->get(word).pointAt(d) * d_params.layer1_size; //other words
                             // Propagate hidden -> output
                             for (c = 0; c < d_params.layer1_size; ++c)
-                                f += d_params.syn0[c + l1] * d_params.syn1[c + l2];
+                                f += syn0[c + l1] * syn1[c + l2];
 
                             if (f <= -d_params.max_exp || f >= d_params.max_exp)
                                 continue;
 
-                            f = d_params.expTable[(int)((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2))];
+                            f = expTable[(int)((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2))];
 
                             // 'g' is the gradient multiplied by the learning rate
                             real g = (1 - voc->get(word).codeAt(d) - f) * (*d_params.alpha);
                             // Propagate errors output -> hidden
                             for (size_t c = 0; c < d_params.layer1_size; ++c)
-                                neu1e[c] += g * d_params.syn1[c + l2];
+                                neu1e[c] += g * syn1[c + l2];
                             // Learn weights hidden -> output
                             for (size_t c = 0; c < d_params.layer1_size; ++c)
-                                d_params.syn1[c + l2] += g * d_params.syn0[c + l1];
+                                syn1[c + l2] += g * syn0[c + l1];
                         }
                     }
 
                     // NEGATIVE SAMPLING
                     if (d_params.negative > 0)
                     {
+                        vector<real> &syn1neg(*d_params.syn1neg);
                         for (size_t d = 0; d < d_params.negative + 1; ++d)
                         {
                             size_t target;
@@ -201,7 +207,7 @@ namespace Word2Vec
                             else
                             {
                                 size_t table_index = rng_table(generator);
-                                target = d_params.table[table_index];
+                                target = table[table_index];
 
                                 if (target == 0)
                                     target = rng_vocab(generator);
@@ -217,7 +223,7 @@ namespace Word2Vec
                             real g;
 
                             for (size_t c = 0; c < d_params.layer1_size; ++c)
-                                f += d_params.syn0[c + l1] * d_params.syn1neg[c + l2];
+                                f += syn0[c + l1] * syn1neg[c + l2];
 
                             if (f > d_params.max_exp)
                             {
@@ -230,20 +236,20 @@ namespace Word2Vec
                             else
                             {
                                 long exp_index = ((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2));
-                                g = (label - d_params.expTable[exp_index]) * (*d_params.alpha);
+                                g = (label - expTable[exp_index]) * (*d_params.alpha);
                             }
                             
                             for (size_t c = 0; c < d_params.layer1_size; ++c)
-                                neu1e[c] += g * d_params.syn1neg[c + l2];
+                                neu1e[c] += g * syn1neg[c + l2];
                             
                             for (size_t c = 0; c < d_params.layer1_size; ++c)
-                                d_params.syn1neg[c + l2] += g * d_params.syn0[c + l1];
+                                syn1neg[c + l2] += g * syn0[c + l1];
                         }
                     }
 
                     // Learn weights input -> hidden
                     for (size_t c = 0; c < d_params.layer1_size; ++c)
-                        d_params.syn0[c + l1] += neu1e[c];
+                        syn0[c + l1] += neu1e[c];
                 }
             }
             
@@ -257,8 +263,5 @@ namespace Word2Vec
         }
 
         input.close();
-
-        delete [] neu1;
-        delete [] neu1e;
     }
 }

@@ -27,13 +27,17 @@ namespace Word2Vec
         uniform_int_distribution<size_t> rng_vocab(1, voc->size() - 1);
         uniform_real_distribution<real> rng_real(0, 1);
 
+        vector<real> &syn0(*d_params.syn0);
+        vector<real> &expTable(*d_params.expTable);
+        vector<int> &table(*d_params.table);
+
         int start = 0;
         int end;
         char wordToGram[MAX_STRING];
         char gram[d_params.ngram + 3];
 
-        real *neu1 = new real[d_params.layer1_size];
-        real *neu1e = new real[d_params.layer1_size];
+        vector<real> neu1(d_params.layer1_size);
+        vector<real> neu1e(d_params.layer1_size);
 
         ifstream input(d_params.train_file, ios_base::in | ios_base::binary);
 
@@ -129,11 +133,8 @@ namespace Word2Vec
             if (word == -1) 
                 continue;
 
-            for (size_t c = 0; c < d_params.layer1_size; ++c)
-                neu1[c] = 0;
-
-            for (size_t c = 0; c < d_params.layer1_size; ++c)
-                neu1e[c] = 0;
+            fill(neu1.begin(), neu1.end(), 0);
+            fill(neu1e.begin(), neu1e.end(), 0);
 
             size_t b = rng_window(generator);
 
@@ -157,19 +158,20 @@ namespace Word2Vec
                     }
 
                     for (c = 0; c < d_params.layer1_size; ++c) // c is each vector index
-                        neu1[c] += d_params.syn0[c + last_word * d_params.layer1_size]; //sum of all vectors in input window (fig cbow) -> vectors on hidden
+                        neu1[c] += syn0[c + last_word * d_params.layer1_size]; //sum of all vectors in input window (fig cbow) -> vectors on hidden
                 }
             }
 
             if (d_params.hs)
             {
+                vector<real> &syn1(*d_params.syn1);
                 for (size_t d = 0; d < voc->get(word).codeLen(); ++d)
                 {
                     real f = 0;
                     size_t l2 = voc->get(word).pointAt(d) * d_params.layer1_size; //offset of word
                     // Propagate hidden -> output
                     for (size_t c = 0; c < d_params.layer1_size; ++c)
-                        f += neu1[c] * d_params.syn1[c + l2]; //sum vectors input window * word weights on syn1 -> output vectors
+                        f += neu1[c] * syn1[c + l2]; //sum vectors input window * word weights on syn1 -> output vectors
 
                     if (f <= -d_params.max_exp) //sigmoid activation function - precalculated in expTable
                         continue;
@@ -177,24 +179,25 @@ namespace Word2Vec
                     if (f >= d_params.max_exp)
                         continue;
 
-                    f = d_params.expTable[(int)((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2))];
+                    f = expTable[(int)((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2))];
 
                     // 'g' is the gradient multiplied by the learning rate
                     real g = (1 - voc->get(word).codeAt(d) - f) * (*d_params.alpha); 
 
                     // Propagate errors output -> hidden
                     for (size_t c = 0; c < d_params.layer1_size; ++c)
-                        neu1e[c] += g * d_params.syn1[c + l2]; //save to modify vectors
+                        neu1e[c] += g * syn1[c + l2]; //save to modify vectors
 
                     // Learn weights hidden -> output
                     for (size_t c = 0; c < d_params.layer1_size; ++c)
-                        d_params.syn1[c + l2] += g * neu1[c]; //modify weights
+                        syn1[c + l2] += g * neu1[c]; //modify weights
                 }
             }
 
             // NEGATIVE SAMPLING
             if (d_params.negative > 0)
             {
+                vector<real> &syn1neg(*d_params.syn1neg);
                 for (size_t d = 0; d < d_params.negative + 1; ++d)
                 {
                     size_t target;
@@ -208,7 +211,7 @@ namespace Word2Vec
                     else
                     {
                         size_t table_index = rng_table(generator);
-                        target = d_params.table[table_index];
+                        target = table[table_index];
 
                         if (target == 0) 
                             target = rng_vocab(generator);
@@ -224,20 +227,20 @@ namespace Word2Vec
                     real g;
 
                     for (size_t c = 0; c < d_params.layer1_size; ++c)
-                        f += neu1[c] * d_params.syn1neg[c + l2]; //vector*weights
+                        f += neu1[c] * syn1neg[c + l2]; //vector*weights
 
                     if (f > d_params.max_exp) //sigmoid
                         g = (label - 1) * (*d_params.alpha);
                     else if (f < -d_params.max_exp)
                         g = (label - 0) * (*d_params.alpha);
                     else
-                        g = (label - d_params.expTable[(int)((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2))]) * (*d_params.alpha);
+                        g = (label - expTable[(int)((f + d_params.max_exp) * (d_params.exp_table_size / d_params.max_exp / 2))]) * (*d_params.alpha);
 
                     for (size_t c = 0; c < d_params.layer1_size; ++c)
-                        neu1e[c] += g * d_params.syn1neg[c + l2]; //saving error
+                        neu1e[c] += g * syn1neg[c + l2]; //saving error
 
                     for (size_t c = 0; c < d_params.layer1_size; ++c)
-                        d_params.syn1neg[c + l2] += g * neu1[c];
+                        syn1neg[c + l2] += g * neu1[c];
                 }
             }
 
@@ -257,7 +260,7 @@ namespace Word2Vec
                         continue;
 
                     for (c = 0; c < d_params.layer1_size; ++c)
-                        d_params.syn0[c + last_word * d_params.layer1_size] += neu1e[c];  //modify word vectors with error
+                        syn0[c + last_word * d_params.layer1_size] += neu1e[c];  //modify word vectors with error
                 }
             }
             
@@ -271,8 +274,5 @@ namespace Word2Vec
         }
         
         input.close();
-
-        delete [] neu1;
-        delete [] neu1e;
     }
 }

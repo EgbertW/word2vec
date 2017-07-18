@@ -2,6 +2,7 @@
 #define __INCLUDED_WORD2VEC_PARAMETERS_
 
 #include <memory>
+#include <vector>
 
 #define MAX_SENTENCE_LENGTH 100
 #define MAX_CODE_LENGTH 40
@@ -34,19 +35,19 @@ namespace Word2Vec
         // Training variables
 
         // Vector table
-        real *syn0;
+        std::shared_ptr<std::vector<real> > syn0;
 
         // Vector table for hierarchical softmax
-        real *syn1;
+        std::shared_ptr<std::vector<real> > syn1;
 
         // Vector table for negative examples?
-        real *syn1neg;
+        std::shared_ptr<std::vector<real> > syn1neg;
 
         // Pre-computed exponents table
-        real *expTable;
+        std::shared_ptr<std::vector<real> > expTable;
 
         /** Unigram table */
-        int *table;
+        std::shared_ptr<std::vector<int> > table;
 
         // Shared parameters
 
