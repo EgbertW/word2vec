@@ -5,9 +5,9 @@ This is a C++ port of the repository at https://github.com/dav/word2vec, previou
 
 The port is based on the modifications in the repository at https://github.com/adamwulf/word2vec
 
-It's still a work in progress. Reading vocabulary and training works using the demo-word.sh script but expect some issues.
-
 Goal is to make a more encapsulated library to programmatically train word vectors and extract word distances, for use in other systems.
+
+Training using skip and cbow works, and outperforms the C-variant by 25% to 50% on preliminary tests.
 
 Original text
 ============
