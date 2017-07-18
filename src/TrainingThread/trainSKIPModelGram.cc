@@ -149,7 +149,7 @@ namespace Word2Vec
                     if (c < 0 || c >= sentence_length)
                         continue;
 
-                    size_t last_word = sen[c];
+                    int last_word = sen[c];
 
                     if (last_word == -1)
                         continue;
@@ -200,7 +200,8 @@ namespace Word2Vec
                             }
                             else
                             {
-                                target = rng_table(generator);
+                                size_t table_index = rng_table(generator);
+                                target = d_params.table[table_index];
 
                                 if (target == 0)
                                     target = rng_vocab(generator);

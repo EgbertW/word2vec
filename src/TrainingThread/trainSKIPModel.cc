@@ -112,7 +112,6 @@ namespace Word2Vec
                     if (sentence_length >= MAX_SENTENCE_LENGTH)
                         break;
                 }
-
                 
                 sentence_position = 0;
             }
@@ -148,7 +147,7 @@ namespace Word2Vec
                     if (c < 0 || c >= sentence_length)
                         continue;
 
-                    size_t last_word = sen[c]; //index of word
+                    int last_word = sen[c]; //index of word
                     if (last_word == -1)
                     {
                         printf("This can only happen when the sentence did not reach MAX_SENTENCE_LENGTH -> EOF\n");

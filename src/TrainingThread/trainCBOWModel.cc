@@ -125,13 +125,13 @@ namespace Word2Vec
             int word = sen[sentence_position]; //index
 
             if (word == -1) 
+            {
+                printf("This never happens as word == -1 is already checked in the sentece loop\n");
                 continue;
+            }
 
-            for (size_t c = 0; c < d_params.layer1_size; ++c)
-                neu1[c] = 0;
-
-            for (size_t c = 0; c < d_params.layer1_size; ++c)
-                neu1e[c] = 0;
+            fill(neu1, neu1 + d_params.layer1_size, 0);
+            fill(neu1e, neu1e + d_params.layer1_size, 0);
 
             size_t b = rng_window(generator);
 
@@ -142,16 +142,19 @@ namespace Word2Vec
             {
                 if (a != d_params.window)
                 {
-                    size_t c = sentence_position - d_params.window + a;
+                    int c = sentence_position - d_params.window + a;
                     
                     if (c < 0 || c >= sentence_length)
                         continue;
 
-                    size_t last_word = sen[c]; //index of word
+                    int last_word = sen[c]; //index of word
                     if (last_word == -1)
+                    {
+                        printf("This can only happen when the sentence did not reach MAX_SENTENCE_LENGTH -> EOF\n");
                         continue;
+                    }
 
-                    for (size_t c = 0; c < d_params.layer1_size; ++c) // c is each vector index
+                    for (c = 0; c < d_params.layer1_size; ++c) // c is each vector index
                         neu1[c] += d_params.syn0[c + last_word * d_params.layer1_size]; //sum of all vectors in input window (fig cbow) -> vectors on hidden
                 }
             }
@@ -202,7 +205,8 @@ namespace Word2Vec
                     }
                     else
                     {
-                        target = rng_table(generator);
+                        size_t table_index = rng_table(generator);
+                        target = d_params.table[table_index];
 
                         if (target == 0) 
                             target = rng_vocab(generator);
@@ -214,11 +218,22 @@ namespace Word2Vec
                     }
 
                     size_t l2 = target * d_params.layer1_size; //get word vector index
+                    if (l2 > d_params.vocabulary->size() * d_params.layer1_size)
+                    {
+                        fprintf(stderr, "target(%lu) * size(%lu) = %lu\n", target, d_params.layer1_size, l2);
+                    }
                     real f = 0;
                     real g;
 
                     for (size_t c = 0; c < d_params.layer1_size; ++c)
+                    {
+                        size_t i2 = c + l2;
+                        if (i2 > (d_params.layer1_size * d_params.vocabulary->size()))
+                        {
+                            fprintf(stderr, "Index %ld + %ld = %lu\n", c, l2, i2);
+                        }
                         f += neu1[c] * d_params.syn1neg[c + l2]; //vector*weights
+                    }
 
                     if (f > d_params.max_exp) //sigmoid
                         g = (label - 1) * (*d_params.alpha);
@@ -240,12 +255,12 @@ namespace Word2Vec
             {
                 if (a != d_params.window)
                 {
-                    size_t c = sentence_position - d_params.window + a;
+                    int c = sentence_position - d_params.window + a;
 
                     if (c < 0 || c >= sentence_length)
                         continue;
 
-                    size_t last_word = sen[c];
+                    int last_word = sen[c];
 
                     if (last_word == -1)
                         continue;
