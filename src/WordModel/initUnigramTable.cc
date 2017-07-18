@@ -34,11 +34,5 @@ namespace Word2Vec
             if (i >= d_params.vocabulary->size())
                 i = d_params.vocabulary->size() - 1;
         }
-
-        cout << endl << endl << "-----" << endl;
-        for (size_t a = 0; a < d_params.table_size; ++a)
-            cout << d_params.table[a] << "\n";
-
-        cout << endl << "-----" << endl << endl;
     }
 }

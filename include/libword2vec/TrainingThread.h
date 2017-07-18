@@ -16,12 +16,14 @@ namespace Word2Vec
             typedef WordModel::real real;
         
         private:
+            size_t d_id;
             Parameters d_params;
             std::thread d_thread;
 
         public:
-            TrainingThread(Parameters parameters)
+            TrainingThread(size_t id, Parameters parameters)
             :
+                d_id(id),
                 d_params(parameters)
             {
                 d_thread = std::thread(&TrainingThread::run, this);

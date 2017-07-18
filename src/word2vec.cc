@@ -151,10 +151,7 @@ int main(int argc, char **argv)
 		params.file_size = vocab->readTrainFile(train_file, min_count);
 
 	if (not save_vocab_file.empty())
-    {
-        cout << "Saving vocabulary file\n";
 		vocab->save(save_vocab_file);
-    }
 
 	if (output_file.empty()) //nowhere to output => quit
 		return 0;

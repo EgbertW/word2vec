@@ -3,6 +3,8 @@
 #include <ctime>
 #include <memory>
 #include <fstream>
+#include <random>
+
 using namespace std;
 
 namespace Word2Vec
@@ -17,7 +19,13 @@ namespace Word2Vec
 
         size_t sentence_length = 0;
         size_t sentence_position = 0;
-        size_t next_random = d_params.threadNumber;
+
+        random_device r;
+        mt19937 generator(r());
+        uniform_int_distribution<size_t> rng_table(0, d_params.table_size - 1);
+        uniform_int_distribution<size_t> rng_window(0, d_params.window - 1);
+        uniform_int_distribution<size_t> rng_vocab(1, voc->size() - 1);
+        uniform_real_distribution<real> rng_real(0, 1);
 
         int start = 0;
 
@@ -29,7 +37,7 @@ namespace Word2Vec
 
         ifstream input(d_params.train_file, ios_base::in | ios_base::binary);
 
-        input.seekg(d_params.file_size / (long long)d_params.num_threads * d_params.threadNumber);
+        input.seekg(d_params.file_size / (long long)d_params.num_threads * d_id);
 
         while (true)
         {
@@ -92,9 +100,9 @@ namespace Word2Vec
                     if (d_params.sample > 0)
                     {
                         real ran = (sqrt(voc->get(word).cn() / (d_params.sample * voc->nTrainWords())) + 1) * (d_params.sample * voc->nTrainWords()) / voc->get(word).cn();
-                        next_random = next_random * (unsigned long long)25214903917 + 11;
+                        double threshold = rng_real(generator);
                         
-                        if (ran < (next_random & 0xFFFF) / (real)65536)
+                        if (ran < threshold)
                             continue;
                     }
 
@@ -125,8 +133,7 @@ namespace Word2Vec
             for (size_t c = 0; c < d_params.layer1_size; ++c)
                 neu1e[c] = 0;
 
-            next_random = next_random * (unsigned long long)25214903917 + 11;
-            size_t b = next_random % d_params.window;
+            size_t b = rng_window(generator);
 
             /*--- Training ---*/
 
@@ -186,7 +193,7 @@ namespace Word2Vec
                 for (size_t d = 0; d < d_params.negative + 1; ++d)
                 {
                     size_t target;
-                    size_t label;
+                    int label;
 
                     if (d == 0)
                     {
@@ -195,11 +202,10 @@ namespace Word2Vec
                     }
                     else
                     {
-                        next_random = next_random * (size_t)25214903917 + 11;
-                        target = d_params.table[(next_random >> 16) % d_params.table_size];
+                        target = rng_table(generator);
 
                         if (target == 0) 
-                            target = next_random % (voc->size() - 1) + 1;
+                            target = rng_vocab(generator);
 
                         if (target == word)
                             continue;

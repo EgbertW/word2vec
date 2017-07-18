@@ -53,18 +53,12 @@ namespace Word2Vec
 
         sort(min_count);
 
-        size_t total = 0;
-        for (VocabularyWord &w : d_vocabulary)
-            total += w.cn();
-
         if (DEBUG_MODE > 1)
         {
             cout << "Vocabulary size: " << d_vocabulary.size() << endl;
             cout << "Words in train file:  " << d_train_words << endl;
-            cout << "Sum of word counts:  " << total << endl;
         }
 
-        cout << "FIle size: " << file_size << endl;
         return file_size;
     }
 }

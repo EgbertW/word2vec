@@ -46,15 +46,10 @@ namespace Word2Vec
 
         sort(min_count);
 
-        size_t total = 0;
-        for (VocabularyWord &w : d_vocabulary)
-            total += w.cn();
-
         if (DEBUG_MODE > 1)
         {
             cout << "Vocabulary size: " << d_vocabulary.size() << endl;
             cout << "Words in train file:  " << d_train_words << endl;
-            cout << "Sum of word counts:  " << total << endl;
         }
 
         input = ifstream(train_file, ios_base::in | ios_base::binary);
@@ -66,7 +61,6 @@ namespace Word2Vec
 
         input.seekg(0, ios_base::end);
         long long file_size = input.tellg();
-        cout << "FIle size: " << file_size << endl;
         input.close();
         return file_size;
     }

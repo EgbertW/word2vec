@@ -28,14 +28,7 @@ namespace Word2Vec
         for (size_t a = 0; a < d_params.num_threads; ++a)
         {
             Parameters params = d_params;
-            //if (d_cbow)
-            //    params.train_type = TrainType::CBOW;
-            //else
-                params.train_type = TrainType::SKIP;
-
-            params.threadNumber = a;
-
-            threads.push_back(shared_ptr<TrainingThread>(new TrainingThread(params)));
+            threads.push_back(shared_ptr<TrainingThread>(new TrainingThread(a, params)));
         }
 
         for (auto ptr = threads.begin(); ptr != threads.end(); ++ptr)

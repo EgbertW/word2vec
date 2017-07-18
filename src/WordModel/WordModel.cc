@@ -24,10 +24,6 @@ namespace Word2Vec
             for (size_t a = 0; a < d_params.vocabulary->size(); ++a)
                 d_params.syn0[a * d_params.layer1_size + b] = distribution(generator);
 
-        //for (size_t b = 0; b < d_params.layer1_size; ++b)
-        //    for (size_t a = 0; a < d_params.vocabulary->size(); ++a)
-        //        d_params.syn0[a * d_params.layer1_size + b] = (rand() / (real)RAND_MAX - 0.5) / d_params.layer1_size;
-
         d_params.vocabulary->createBinaryTree();
 
         d_params.expTable = new real[d_params.exp_table_size + 1];
