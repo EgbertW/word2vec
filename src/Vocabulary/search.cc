@@ -6,7 +6,7 @@ namespace Word2Vec
 {
     /* Returns position of a word in the vocabulary;
      if the word is not found, returns -1*/
-    int Vocabulary::search(char const *word)
+    int Vocabulary::search(char const *word) const
     {
         int hash = getWordHash(word);
         

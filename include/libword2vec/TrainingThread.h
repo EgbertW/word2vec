@@ -12,6 +12,8 @@ namespace Word2Vec
 {
     class TrainingThread
     {
+        friend void WordModel::train();
+
         public:
             typedef WordModel::real real;
         
@@ -21,14 +23,6 @@ namespace Word2Vec
             std::thread d_thread;
 
         public:
-            TrainingThread(size_t id, Parameters parameters)
-            :
-                d_id(id),
-                d_params(parameters)
-            {
-                d_thread = std::thread(&TrainingThread::run, this);
-            }
-
             ~TrainingThread()
             {
                 if (d_thread.joinable())
@@ -67,6 +61,14 @@ namespace Word2Vec
             void trainCBOWModelGram();
             void trainSKIPModel();
             void trainSKIPModelGram();
+
+            TrainingThread(size_t id, Parameters parameters)
+            :
+                d_id(id),
+                d_params(parameters)
+            {
+                d_thread = std::thread(&TrainingThread::run, this);
+            }
     };
 }
 

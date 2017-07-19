@@ -8,7 +8,7 @@ using namespace std;
 namespace Word2Vec
 {
     /*Reads a word from file descriptor fin*/
-    void Vocabulary::readWord(char *word, istream &input)
+    void Vocabulary::readWord(char *word, istream &input) const
     {
         size_t length = 0;
         while (not input.eof())

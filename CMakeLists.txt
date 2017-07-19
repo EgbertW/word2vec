@@ -11,7 +11,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(word2vec src/word2vec.cc)
 
-add_executable(distance src/Distance/Distance.cc)
+add_executable(distance src/distance.cc)
 
 target_link_libraries(word2vec
     WordModel.o
@@ -64,7 +64,7 @@ add_library(
     NGrams.o
     src/NGram/addGramPosition.cc
     src/NGram/getGrams.cc
-    src/NGram/gramVocToWordVec.cc
+    src/NGram/writeGramVocabularyToWordVectors.cc
     src/NGram/minMaxGram.cc
     src/NGram/sumFreqGram.cc
     src/NGram/sumGram.cc
@@ -86,9 +86,9 @@ add_library(
     src/Vocabulary/createBinaryTree.cc
     src/Vocabulary/destructor.cc
     src/Vocabulary/getWordHash.cc
-    src/Vocabulary/learnNGramFromFile.cc
+    src/Vocabulary/readTrainFileNgram.cc
     src/Vocabulary/readTrainFile.cc
-    src/Vocabulary/read.cc
+    src/Vocabulary/readVocabularyFile.cc
     src/Vocabulary/readWord.cc
     src/Vocabulary/readWordIndex.cc
     src/Vocabulary/reduce.cc
@@ -105,4 +105,6 @@ add_library(
     src/WordModel/initUnigramTable.cc
     src/WordModel/train.cc
     src/WordModel/WordModel.cc
+    src/WordModel/saveTrainResults.cc
+    src/WordModel/saveTrainResultsNgrams.cc
 )

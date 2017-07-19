@@ -22,18 +22,18 @@ namespace Word2Vec
             /* Destructor */
             ~Vocabulary();
 
-            /* Reads a word from file descriptor fin*/
-            void readWord(char *word, std::istream &input);
+            /* Reads a word from file descriptor fin */
+            void readWord(char *word, std::istream &input) const;
 
-            /* Reads a word from file descriptor fin*/
-            int readWordIndex(std::istream &input);
+            /* Reads a word from file descriptor fin */
+            int readWordIndex(std::istream &input) const;
 
             /* Returns hash value of a word*/
             int getWordHash(char const *word) const;
 
             /* Returns position of a word in the vocabulary;
              if the word is not found, returns -1*/
-            int search(char const *word);
+            int search(char const *word) const;
 
             /* Reads a word and returns its index in the vocabulary*/
             int readWord(std::istream &input);
@@ -52,16 +52,16 @@ namespace Word2Vec
             void searchAndAdd(char const *word);
 
             /*Create a vocab from train file - returns file size*/
-            long long readTrainFile(std::string const &train_file, size_t min_count);
+            size_t readTrainFile(Parameters const &params);
 
             /*Create a vocab of ngram from train file returns file size*/
-            long long learnNGramFromFile(std::string const &train_file, size_t min_count, int ngram, int position, bool overlap);
+            size_t readTrainFileNgram(Parameters const &params);
 
             /*Saves vocab & Occurences*/
-            void save(std::string const &save_vocab_file) const;
+            void save(std::string const &save_vocab_file, bool debug = false) const;
 
             /* Reads a saved vocab file */
-            long long read(std::string const &read_vocab_file, std::string const &train_file, size_t min_count);
+            size_t readVocabularyFile(std::string const &read_vocab_file, Parameters const &params);
 
             /* Create binary Huffman tree using the word counts
              Frequent words will have short uniqe binary codes*/

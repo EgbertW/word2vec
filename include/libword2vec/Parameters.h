@@ -22,6 +22,18 @@ namespace Word2Vec
         SKIPGram  // SKIP with n-grams
     };
 
+    enum GroupType
+    {
+        NONE = -1,
+        SUM = 0,
+        MEAN = 1,
+        MIN = 2,
+        MAX = 3,
+        TRUNC = 4,
+        WEIGHTEDSUM = 5
+    };
+
+
     struct Parameters
     {
         typedef float real;
@@ -88,7 +100,10 @@ namespace Word2Vec
         int exp_table_size = 1000;
 
         /*** Size of n-grams */
-        int ngram = 3;
+        int ngram = 0;
+
+        /** Minimum amount of occurences of each vocabulary entry */
+        size_t min_count = 5;
 
         int max_exp = 6;
         int window = 5;
@@ -107,15 +122,15 @@ namespace Word2Vec
         /** Whether ngrams can overlap or not */
         bool overlap;
 
+		/** Computatio of word-vectors with n-grams: -1: No grouping, 0:Sum; 1:Mean; 2:Min; 3:Max; 4:Trunc; 5:FreqSum */
+        GroupType group_vec = GroupType::NONE;
+
         /** Save resulting vectors binary or not */
         // TODO: Why use two formats...
-        bool binary = false; 
+        bool binary = true; 
 
         /** The input file with the corpus */
         char const *train_file;
-
-        /** The output file where to write the vectors */
-        char const *output_file;
 
         /** When the training started */
         clock_t start;

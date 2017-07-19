@@ -21,9 +21,22 @@ namespace Word2Vec
             WordModel(Parameters params);
             ~WordModel();
 
-            void initUnigramTable();
             void train();
+            void save(std::string const &output_file);
+
+        protected:
+            void initUnigramTable();
+            void saveTrainResults(std::string const &output_file);
+            void saveTrainResultsNgrams(std::string const &output_file);
     };
+
+    inline void WordModel::save(std::string const &output_file)
+    {
+        if (d_params.ngram > 0)
+            saveTrainResultsNgrams(output_file);
+        else
+            saveTrainResults(output_file);
+    }
 }
 
 #endif

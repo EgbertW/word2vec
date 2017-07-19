@@ -1,24 +1,26 @@
 #include "vocabulary.ih"
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 using namespace std;
 
 namespace Word2Vec
 {
-    /*Create a vocab from train file*/
-    long long Vocabulary::readTrainFile(string const &train_file, size_t min_count)
+    /**
+     * Create a vocabulary from train file
+     */
+    size_t Vocabulary::readTrainFile(Parameters const &params)
     {
         char word[MAX_STRING];
 
-        ifstream input(train_file, ios_base::in | ios_base::binary);
+        ifstream input(params.train_file, ios_base::in | ios_base::binary);
 
         if (not input.good())
-        {
-            // TODO: Throw exception, not exit
-            cerr << "ERROR: training data file not found!\n";
-            exit(1);
-        }
+            throw runtime_error("Training data file not found");
+
+        if (params.debug_mode > 0)
+            cout << "Reading words from " << params.train_file << endl;
 
         // Determine file size
         input.seekg(0, ios_base::end);
@@ -34,7 +36,7 @@ namespace Word2Vec
 
         addWord("</s>");
 
-        while (true) //not input.eof())
+        while (true) 
         {
             word[0] = 0;
             readWord(word, input);
@@ -51,7 +53,7 @@ namespace Word2Vec
         }
         input.close();
 
-        sort(min_count);
+        sort(params.min_count);
 
         if (DEBUG_MODE > 1)
         {
