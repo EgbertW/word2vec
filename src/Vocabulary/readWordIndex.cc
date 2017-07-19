@@ -9,7 +9,7 @@ namespace Word2Vec
     /* Reads a word and returns its index in the vocabulary*/
     int Vocabulary::readWordIndex(istream &input) const
     {
-        char word[MAX_STRING];
+        string word;
         readWord(word, input);
 
         if (input.eof())

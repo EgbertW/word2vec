@@ -33,7 +33,6 @@ namespace Word2Vec
 
         int start = 0;
         int end = d_params.ngram - 1;
-        char wordToGram[MAX_STRING];
         char gram[d_params.ngram + 3];
 
         vector<real> neu1(d_params.layer1_size);
@@ -43,6 +42,7 @@ namespace Word2Vec
 
         input.seekg(d_params.file_size / (long long)d_params.num_threads * d_id);
 
+        string wordToGram;
         while (true)
         {
             if (word_count - last_word_count > 10000)
@@ -67,7 +67,6 @@ namespace Word2Vec
 
             if (sentence_length == 0)
             {
-                wordToGram[0] = '\0'; //so length is 0
                 end = 0;
                 size_t i = 0;
                 int word;

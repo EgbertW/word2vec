@@ -12,7 +12,6 @@ namespace Word2Vec
     {
         typedef Parameters::real real;
 
-        char word[MAX_STRING];
         size_t offset;
         size_t cptWord = 0;
         size_t skipCpt = 0;
@@ -37,6 +36,7 @@ namespace Word2Vec
             if (input.eof())
                 break;
 
+            string word;
             voc.readWord(word, input);
             int hash = voc.getWordHash(word);
 
@@ -84,12 +84,13 @@ namespace Word2Vec
         // Write word vectors
         while (!input.eof())
         {
+            string word;
             voc.readWord(word, input);
             hash = voc.getWordHash(word);
 
             fill(word_vec.begin(), word_vec.end(), 0);
 
-            size_t len_word = strlen(word);
+            size_t len_word = word.length();
             if (hashset[hash] != -1)
             {
                 ++skipCpt;

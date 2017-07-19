@@ -6,9 +6,7 @@ namespace Word2Vec
     Vocabulary::Vocabulary(size_t vocab_hash_size)
     {
         d_vocab_hash = new int[vocab_hash_size];
-        for (size_t i = 0; i < vocab_hash_size; ++i)
-            d_vocab_hash[i] = -1;
-
+        std::fill(d_vocab_hash, d_vocab_hash + vocab_hash_size, -1);
         d_vocab_hash_size = vocab_hash_size;
         d_train_words = 0;
     }

@@ -174,13 +174,8 @@ int main(int argc, char **argv)
 
     params.train_file = train_file.c_str();
 	
-	/**
-	Fixed starting Parameters:
-	**/
-	size_t vocab_hash_size =  30000000;  // Maximum 30 * 0.7 = 21M words in the vocabulary
-
 	//1: init vocabulary
-	shared_ptr<Vocabulary> vocab = make_shared<Vocabulary>(vocab_hash_size);
+	shared_ptr<Vocabulary> vocab = make_shared<Vocabulary>(VOCAB_HASH_SIZE);
 
 	//2: load vocab
 	if (not read_vocab_file.empty())

@@ -9,10 +9,10 @@ namespace Word2Vec
     void writeGrams(std::string const &output_file, Parameters const &params);
 
     /* String to ngram s*/
-    int getGrams(char *word, char *gram, size_t index, size_t size, int overlap, int position);
+    int getGrams(std::string const &word, char *gram, size_t index, size_t size, int overlap, int position);
 
     /* Adds position info to n-gram */
-    void addGramPosition(char *word, char *gram, size_t size, size_t index, int position, int overlap);
+    void addGramPosition(std::string const &word, char *gram, size_t size, size_t index, int position, int overlap);
 
     /* Utility functions */
     void sumGram(Parameters const &params, size_t offset, std::vector<Parameters::real> &vector);

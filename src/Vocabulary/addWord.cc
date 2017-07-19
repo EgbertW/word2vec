@@ -10,13 +10,12 @@ namespace Word2Vec
      * Adds a word to the vocabulary
      * @return size_t The index of the new word
      */
-    size_t Vocabulary::addWord(char const *word)
+    size_t Vocabulary::addWord(string const &word)
     {
         size_t hash;
-        size_t length = strlen(word) + 1;
 
-        if (length > MAX_STRING)
-            length = MAX_STRING;
+        if (word.length() > MAX_STRING)
+            throw runtime_error("Word too long");
         
         VocabularyWord vword(word);
         d_vocabulary.push_back(vword);

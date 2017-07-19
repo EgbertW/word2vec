@@ -7,7 +7,7 @@ using namespace std;
 namespace Word2Vec
 {
     /*Look if word already in vocab, if not add, if yes, increment. */
-    void Vocabulary::searchAndAdd(char const *word)
+    void Vocabulary::searchAndAdd(string const &word)
     {
         int i = search(word);
 

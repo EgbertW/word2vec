@@ -8,14 +8,16 @@ using namespace std;
 namespace Word2Vec
 {
     /*Reads a word from file descriptor fin*/
-    void Vocabulary::readWord(char *word, istream &input) const
+    void Vocabulary::readWord(string &word, istream &input) const
     {
         size_t length = 0;
+        word.clear();
+        word.reserve(20);
         while (not input.eof())
         {
             int character = input.get();
 
-            if (character == 13) //Carriage Return
+            if (character == 13) // Carriage Return
                 continue;
 
             if ((character == ' ') || (character == '\t') || (character == '\n'))
@@ -23,26 +25,25 @@ namespace Word2Vec
                 if (length > 0)
                 {
                     if (character == '\n')
-                        input.unget(); //we don't want the new line char.
+                        input.unget(); // We don't want the new line char.
                     break;
                 }
 
                 if (character == '\n')
                 { 
-                    strcpy(word, "</s>");  //newline become </s> in corpus
+                    // Newline become </s> in corpus
+                    word = "</s>";
                     return;
                 }
                 else
                     continue;
             }
 
-            word[length] = character;
-            ++length;
-
-            if (length >= MAX_STRING - 1)
-                --length;   // Truncate too long words
+            if (length < MAX_STRING)
+            {
+                word += character;
+                ++length;
+            }
         }
-
-        word[length] = 0;
     }
 }

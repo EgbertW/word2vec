@@ -3,10 +3,10 @@
 namespace Word2Vec
 {
     /* Adds position to gram Ngram - gram tab size is ngram+3 index: [0->ngram+2]*/
-    void addGramPosition(char *word, char *gram, size_t size, size_t index, int position, int overlap)
+    void addGramPosition(std::string const &word, char *gram, size_t size, size_t index, int position, int overlap)
     {
         char num[3];
-        int lenWord = strlen(word);
+        int lenWord = word.length();
         int lenGram = strlen(gram);
         int lastIndex;
 

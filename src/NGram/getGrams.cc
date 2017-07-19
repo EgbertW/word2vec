@@ -2,9 +2,9 @@
 
 namespace Word2Vec
 {
-    int getGrams(char *word, char *gram, size_t index, size_t size, int overlap, int position)
+    int getGrams(std::string const &word, char *gram, size_t index, size_t size, int overlap, int position)
     {
-        size_t lenWord = strlen(word);
+        size_t lenWord = word.length();
         size_t lastIndex;
 
         if (overlap)

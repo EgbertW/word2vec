@@ -12,12 +12,11 @@ namespace Word2Vec
      */
     size_t Vocabulary::readTrainFileNgram(Parameters const &params)
     {
-        char word[MAX_STRING];
         char *gram = new char[params.ngram * 2 + 4]; //possibility to merge a ngram with another one < ngram size + position (3 tokens) + '\0'
 
-        for (size_t i = 0; i < d_vocab_hash_size; ++i) //init vocab hashtable
-            d_vocab_hash[i] = -1;
-        
+        // Reset hash table
+        fill(d_vocab_hash, d_vocab_hash + d_vocab_hash_size, -1);
+
         ifstream input(params.train_file, ios_base::in | ios_base::binary);
 
         if (!input.good())
@@ -39,11 +38,13 @@ namespace Word2Vec
 
         while (!input.eof())
         {
+            string word;
             readWord(word, input);
 
-            size_t lenWord = strlen(word);
+            if (word.empty())
+                continue;
 
-            if (lenWord <= params.ngram)
+            if (word.length() <= params.ngram)
             { // Word smaller or equal to ngram var.
                 searchAndAdd(word);
                 continue;
@@ -55,9 +56,6 @@ namespace Word2Vec
                 searchAndAdd(gram);
                 ++i;
             }
-
-            if (input.eof())
-                break;
 
             ++d_train_words;
 

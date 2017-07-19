@@ -127,11 +127,7 @@ int main(int argc, char **argv)
 
         for (size_t a = 0; a < params.layer1_size; ++a)
             matrix[a + b * params.layer1_size] /= len;
-
-        if (b % 100 == 0)
-            cout << "Read " << b << " words\r" << flush;
     }
-    cout << "\n";
     input.close();
 
     vector<real> bestd;
@@ -169,12 +165,8 @@ int main(int argc, char **argv)
             for (vocab_index = 0; vocab_index < vocabulary.size(); ++vocab_index)
             {
                 if (word == vocabulary[vocab_index])
-                {
                     break;
-                }
             }
-
-            cout << vocab_index << endl;
 
             if (vocab_index == vocabulary.size())
                 vocab_index = string::npos;
@@ -214,6 +206,7 @@ int main(int argc, char **argv)
         bestd.clear();
         bestw.clear();
 
+        real e_best_d = 0;
         for (size_t vocab_index = 0; vocab_index < words; ++vocab_index)
         {
             bool is_input = false;
@@ -228,31 +221,23 @@ int main(int argc, char **argv)
                     
             real dist = 0;
             for (size_t a = 0; a < params.layer1_size; ++a)
-                dist += vec[a] * matrix[a + vocab_index + params.layer1_size];
+                dist += vec[a] * matrix[a + vocab_index * params.layer1_size];
 
-            bool should_insert = false;
-            size_t insert_at = bestd.size();
-            for (size_t a = 0; a < NUM_WORDS; ++a)
+            auto ptr = bestd.begin();
+            size_t cnt = 0;
+            for ( ; ptr != bestd.end(); ++ptr)
             {
-                if (a >= bestd.size())
-                {
-                    should_insert = true;
-                }
-                else if (dist > bestd[a])
-                {
-                    insert_at = a;
-                    should_insert = true;
-                }
-
-                if (should_insert)
-                {
-                    // insert at position a
-                    bestd.insert(bestd.begin() + insert_at, dist);
-                    bestw.insert(bestw.begin() + insert_at, &vocabulary[vocab_index]);
+                if (dist > *ptr)
                     break;
-                }
+                ++cnt;
             }
             
+            if (ptr != bestd.end() || bestd.size() < NUM_WORDS)
+            {
+                bestd.insert(ptr, dist);
+                bestw.insert(bestw.begin() + cnt, &vocabulary[vocab_index]);
+            }
+
             if (bestd.size() > NUM_WORDS)
             {
                 bestd.erase(bestd.begin() + NUM_WORDS, bestd.end());

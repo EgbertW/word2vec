@@ -23,6 +23,7 @@ namespace Word2Vec
 
             void train();
             void save(std::string const &output_file);
+            void readWordModels(std::string const &input_file);
 
         protected:
             void initUnigramTable();

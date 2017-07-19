@@ -1,12 +1,12 @@
 #include "vocabulary.ih"
 
+using namespace std;
+
 namespace Word2Vec
 {
     /* Reduces the vocabulary by removing infrequent tokens */
     void Vocabulary::reduce(size_t min_reduce)
     {
-        unsigned int hash;
-            
         auto ptr = d_vocabulary.begin();
         while (ptr != d_vocabulary.end())
         {
@@ -16,14 +16,13 @@ namespace Word2Vec
                 ++ptr;
         }
 
-        for (size_t a = 0; a < d_vocab_hash_size; ++a)
-            d_vocab_hash[a] = -1;
+        fill(d_vocab_hash, d_vocab_hash + d_vocab_hash_size, -1);
 
         size_t s = size();
         for (size_t a = 0; a < s; ++a)
         {
             // Hash will be re-computed, as it is not actual
-            hash = getWordHash(get(a).word());
+            size_t hash = getWordHash(get(a).word());
 
             while (d_vocab_hash[hash] != -1)
                 hash = (hash + 1) % d_vocab_hash_size;

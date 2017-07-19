@@ -12,8 +12,6 @@ namespace Word2Vec
      */
     size_t Vocabulary::readTrainFile(Parameters const &params)
     {
-        char word[MAX_STRING];
-
         ifstream input(params.train_file, ios_base::in | ios_base::binary);
 
         if (not input.good())
@@ -38,9 +36,9 @@ namespace Word2Vec
 
         while (true) 
         {
-            word[0] = 0;
+            string word;
             readWord(word, input);
-            if (word[0] != 0)
+            if (not word.empty())
                 searchAndAdd(word);
             
             if (input.eof())

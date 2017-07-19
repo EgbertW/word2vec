@@ -19,7 +19,7 @@ namespace Word2Vec
 
 
         public:
-            VocabularyWord(char const *word)
+            VocabularyWord(std::string const &word)
             :
                 d_cn(0),
                 d_word(word),

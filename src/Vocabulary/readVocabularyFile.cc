@@ -13,8 +13,6 @@ namespace Word2Vec
      */
     size_t Vocabulary::readVocabularyFile(std::string const &read_vocab_file, Parameters const &params)
     {
-        char word[MAX_STRING];
-
         ifstream input(read_vocab_file, ios_base::in | ios_base::binary);
         if (not input.good())
             throw runtime_error("Vobabulary file not found");
@@ -28,6 +26,7 @@ namespace Word2Vec
 
         while (true)
         {
+            string word;
             readWord(word, input);
 
             if (input.eof())

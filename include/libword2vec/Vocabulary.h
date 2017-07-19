@@ -23,23 +23,23 @@ namespace Word2Vec
             ~Vocabulary();
 
             /* Reads a word from file descriptor fin */
-            void readWord(char *word, std::istream &input) const;
+            void readWord(std::string &word, std::istream &input) const;
 
             /* Reads a word from file descriptor fin */
             int readWordIndex(std::istream &input) const;
 
             /* Returns hash value of a word*/
-            int getWordHash(char const *word) const;
+            int getWordHash(std::string const &word) const;
 
             /* Returns position of a word in the vocabulary;
              if the word is not found, returns -1*/
-            int search(char const *word) const;
+            int search(std::string const &word) const;
 
             /* Reads a word and returns its index in the vocabulary*/
             int readWord(std::istream &input);
 
             /* Adds a word to the vocabulary*/
-            size_t addWord(char const *word);
+            size_t addWord(std::string const &word);
 
             /* Sorts the vocabulary by frequency using word counts - EXCEPT 0 -*/
             void sort(size_t min_count);
@@ -49,7 +49,7 @@ namespace Word2Vec
 
             /*Look if word already in vocab, 
             if not add, if yes, increment. --- REDUCE VOCAB TO 1 /!\  */
-            void searchAndAdd(char const *word);
+            void searchAndAdd(std::string const &word);
 
             /*Create a vocab from train file - returns file size*/
             size_t readTrainFile(Parameters const &params);

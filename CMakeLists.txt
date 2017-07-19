@@ -107,4 +107,5 @@ add_library(
     src/WordModel/WordModel.cc
     src/WordModel/saveTrainResults.cc
     src/WordModel/saveTrainResultsNgrams.cc
+    src/WordModel/readWordModels.cc
 )

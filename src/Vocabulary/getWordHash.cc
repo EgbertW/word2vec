@@ -5,12 +5,12 @@
 namespace Word2Vec
 {
     /* Returns hash value of a word*/
-    int Vocabulary::getWordHash(char const *word) const
+    int Vocabulary::getWordHash(std::string const &word) const
     {
-        unsigned long long a;
-        unsigned long long hash = 0;
+        size_t a;
+        size_t hash = 0;
 
-        for (size_t a = 0; a < strlen(word); ++a)
+        for (size_t a = 0; a < word.length(); ++a)
             hash = hash * 257 + word[a];
 
         hash = hash % d_vocab_hash_size;

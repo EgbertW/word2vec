@@ -9,6 +9,8 @@
 #define MAX_STRING 100
 #define DEBUG_MODE 2
 
+// Maximum 30 * 0.7 = 21M words in the vocabulary
+#define VOCAB_HASH_SIZE 30000000
 namespace Word2Vec
 {
     // Forward declaration
