@@ -56,11 +56,9 @@ namespace Word2Vec
                 gram[size] = 0;
             }
 
-
             if (position)
                 addGramPosition(word, gram, size, index, position, overlap);
         }
-        
 
         return 1;
     }
