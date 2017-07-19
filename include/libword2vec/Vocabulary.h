@@ -84,6 +84,9 @@ namespace Word2Vec
 
             /** Show a small summary */
             void printSummary() const;
+
+        private:
+            Vocabulary(Vocabulary const &rhs);
     };
 
     inline VocabularyWord const &Vocabulary::get(size_t index) const

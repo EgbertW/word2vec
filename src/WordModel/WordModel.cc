@@ -7,7 +7,7 @@ using namespace std;
 
 namespace Word2Vec
 {
-    WordModel::WordModel(Parameters params)
+    WordModel::WordModel(Parameters &params)
     :
         d_params(params)
     {

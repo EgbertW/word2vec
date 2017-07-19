@@ -11,10 +11,13 @@ namespace Word2Vec
 {
     void WordModel::readWordModels(std::string const &input_file)
     {
+        if (d_params.vocabulary.get() == nullptr)
+            d_params.vocabulary = make_shared<Vocabulary>(VOCAB_HASH_SIZE);
+
         ifstream input(input_file, ios_base::in | ios_base::binary);
 
         if (!input.good())
-            throw runtime_error("Input file not found");
+            throw runtime_error("Input file not found" + input_file);
 
         string header;
         getline(input, header); 
@@ -69,7 +72,6 @@ namespace Word2Vec
             cout << endl;
         }
 
-        d_params.vocabulary = make_shared<Vocabulary>(VOCAB_HASH_SIZE);
         Vocabulary &voc(*d_params.vocabulary);
 
         size_t units = d_params.layer1_size * words;

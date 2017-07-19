@@ -17,6 +17,9 @@ namespace Word2Vec
         {
             int character = input.get();
 
+            if (character == -1)
+                continue;
+
             if (character == 13) // Carriage Return
                 continue;
 

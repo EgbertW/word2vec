@@ -15,10 +15,10 @@ namespace Word2Vec
     {
         public:
             typedef Parameters::real real;
-            Parameters d_params;
+            Parameters &d_params;
 
         public:
-            WordModel(Parameters params);
+            WordModel(Parameters &params);
             ~WordModel();
 
             void train();

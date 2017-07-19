@@ -21,6 +21,11 @@ target_link_libraries(word2vec
     -pthread
 )
 
+target_link_libraries(distance
+    WordModel.o
+    Vocabulary.o
+)
+
 
 ###
 # Old makefile follows
