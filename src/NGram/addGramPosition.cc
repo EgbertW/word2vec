@@ -5,40 +5,37 @@ namespace Word2Vec
     /* Adds position to gram Ngram - gram tab size is ngram+3 index: [0->ngram+2]*/
     void addGramPosition(std::string const &word, char *gram, size_t size, size_t index, int position, int overlap)
     {
-        char num[3];
-        int lenWord = word.length();
-        int lenGram = strlen(gram);
-        int lastIndex;
+        size_t gram_length = strlen(gram);
+        size_t last_index;
 
         if (overlap)
-            lastIndex = lenWord - size;
+            last_index = word.length() - size;
         else
-            lastIndex = lenWord / size - 1;
+            last_index = word.length() / size - 1;
         
-        if (lastIndex == 0)
+        if (last_index == 0)
             return; 
 
         if (position)
         {
-            // TODO: check for hashbang cruft
-            /*	Adds '-' /!\ intended for no hashbangs */
-            if (index == 0) //first index
+            // Add a - before and after the ngram if there is no word boundary there
+            if (index == 0) // First ngram of word
             {
                 gram[size] = '-';
                 gram[size + 1] = '\0'; 
                 return;
             }
 
-            if (index == lastIndex) //last index
+            if (index == last_index) // Last ngram of word
             {
-                for (size_t i = lenGram + 1; i > 0; --i)
+                for (size_t i = gram_length + 1; i > 0; --i)
                     gram[i] = gram[i-1];
 
                 gram[0] = '-';
                 return;
             }
 
-            for (size_t i = lenGram + 1; i > 0; --i)
+            for (size_t i = gram_length + 1; i > 0; --i)
                 gram[i] = gram[i - 1];
 
             gram[0] = '-';
@@ -47,18 +44,14 @@ namespace Word2Vec
         }
         else
         {
-            /* adds #index- /!\ start must be <= 99 */
-
-            if (index == 0 && gram[0 ]== '#')
+            // Adds the gram index before the gram
+            if (index == last_index)
                 return;
 
-            // TODO: check for hashbang cruft
-            if(index == lastIndex)
-                return;
-
-            for (size_t i = lenGram + 1; i >= 0; --i)
+            for (size_t i = gram_length + 1; i >= 0; --i)
                 gram[i + 3] = gram[i];
             
+            char num[3];
             sprintf(num, "%lu", index);
             if (index >= 10)
             {

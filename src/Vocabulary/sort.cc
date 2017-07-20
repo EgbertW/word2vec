@@ -10,8 +10,6 @@ namespace Word2Vec
     /* Sorts the vocabulary by frequency using word counts*/
     void Vocabulary::sort(size_t min_count)
     {
-        unsigned int hash;
-
         if (DEBUG_MODE > 2)
             cout << "Sorting Vocabulary...\n";
         
