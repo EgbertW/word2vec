@@ -57,7 +57,7 @@ namespace Word2Vec
             ~VocabularyWord()
             {}
 
-            inline int cn() const
+            inline size_t cn() const
             {
                 return d_cn;
             }
@@ -82,9 +82,9 @@ namespace Word2Vec
                 d_point[index] = value;
             }
 
-            inline char const *word() const
+            inline std::string const &word() const
             {
-                return d_word.c_str();
+                return d_word;
             }
 
             inline char codeAt(int pos) const

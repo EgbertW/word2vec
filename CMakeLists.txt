@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(libword2vec)
 
-add_definitions("-std=c++11 -O3 -s")
+add_definitions("-std=c++11 -O3 -s -Wall")
 set(CMAKE_BUILD_TYPE Debug)
 
 find_package(Boost 1.38.0)
@@ -113,4 +113,5 @@ add_library(
     src/WordModel/saveTrainResults.cc
     src/WordModel/saveTrainResultsNgrams.cc
     src/WordModel/readWordModels.cc
+    src/WordModel/findWords.cc
 )

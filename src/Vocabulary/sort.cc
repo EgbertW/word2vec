@@ -20,7 +20,6 @@ namespace Word2Vec
 
         fill(d_vocab_hash, d_vocab_hash + d_vocab_hash_size, -1);
         d_train_words = 0;
-        size_t pre_size = d_vocabulary.size();
 
         // Words occuring less than min_count times will be discarded from the vocab
         d_vocabulary.erase(

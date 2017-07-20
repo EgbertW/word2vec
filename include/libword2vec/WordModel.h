@@ -8,6 +8,7 @@
 #include "Vocabulary.h"
 #include "Parameters.h"
 #include <memory>
+#include <utility>
 
 namespace Word2Vec
 {
@@ -17,6 +18,8 @@ namespace Word2Vec
             typedef Parameters::real real;
             Parameters &d_params;
 
+            typedef std::pair<real, std::string> WordResult;
+
         public:
             WordModel(Parameters &params);
             ~WordModel();
@@ -24,6 +27,7 @@ namespace Word2Vec
             void train();
             void save(std::string const &output_file);
             void readWordModels(std::string const &input_file);
+            std::vector<WordResult> findWords(std::string const &input, size_t number_of_results = 40) const;
 
         protected:
             void initUnigramTable();

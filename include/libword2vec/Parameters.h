@@ -96,27 +96,27 @@ namespace Word2Vec
         size_t file_size = 0;
 
         /** Maximum string length */
-        int max_string = MAX_STRING;
+        size_t max_string = MAX_STRING;
         
         /** Table size */
-        int exp_table_size = 1000;
+        size_t exp_table_size = 1000;
 
         /*** Size of n-grams */
-        int ngram = 0;
+        size_t ngram = 0;
 
         /** Minimum amount of occurences of each vocabulary entry */
         size_t min_count = 5;
 
         int max_exp = 6;
-        int window = 5;
-        int layer1_size = 100;
-        int table_size = 1e8;
+        size_t window = 5;
+        size_t layer1_size = 100;
+        size_t table_size = 1e8;
 
         /** Output classes rather than word vectors. 0 = classes disabled, > 0 = number of classes */
         size_t classes = 0;
 
         /** The number of negative examples; 0 is off, 5-10 are common values */
-        int negative = 0;
+        size_t negative = 0;
 
         /** Add position information to n-grams: indicate where more letters follow by a prefix or suffix of '-' */
         bool position;

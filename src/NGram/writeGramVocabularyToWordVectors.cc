@@ -133,6 +133,8 @@ namespace Word2Vec
                         case GroupType::WEIGHTEDSUM:
                             sumFreqGram(params, offset, word_vec, voc.get(indGram).cn());
                             break;
+                        case GroupType::NONE:
+                            ;
                     }
 
                     ++gramCpt;

@@ -9,6 +9,12 @@ using namespace std;
 
 namespace Word2Vec
 {
+    union RealBuffer
+    {
+        char cv[sizeof(Parameters::real)];
+        Parameters::real rv;
+    };
+
     void WordModel::readWordModels(std::string const &input_file)
     {
         if (d_params.vocabulary.get() == nullptr)
@@ -23,7 +29,7 @@ namespace Word2Vec
         getline(input, header); 
         header += ' ';
 
-        size_t words;
+        size_t words = 0;
         d_params.ngram = 0;
 
         size_t part = 0;
@@ -93,9 +99,11 @@ namespace Word2Vec
 
             for (size_t a = 0; a < d_params.layer1_size; a++)
             {
-                char buf[sizeof(real)];
-                input.read(buf, sizeof(real));
-                matrix[a + index * d_params.layer1_size] = (*reinterpret_cast<real *>(buf));
+                //char buf[sizeof(real)];
+                RealBuffer buf;
+                input.read(buf.cv, sizeof(real));
+                real value = buf.rv;  //*reinterpret_cast<real *>(buf);
+                matrix[a + index * d_params.layer1_size] = value;
             }
             input.get(); // Skip EOL character
 

@@ -29,7 +29,6 @@ namespace Word2Vec
                             reinterpret_cast<char *>(&(syn0[a * d_params.layer1_size + b])),
                             sizeof(real)
                         );
-                        real f = syn0[a * d_params.layer1_size + b];
                     }
                 }
                 else
@@ -45,9 +44,9 @@ namespace Word2Vec
         {
             // Run K-means on the word vectors
 			cout << "Running k-means\n";
-            int clcn = d_params.classes;
-            int iter = 10;
-            int closeid;
+            size_t clcn = d_params.classes;
+            size_t iterations = 10;
+
             vector<int> cl(d_params.vocabulary->size());
             vector<int> centcn(d_params.classes);
             vector<real> cent(d_params.classes * d_params.layer1_size);
@@ -55,7 +54,7 @@ namespace Word2Vec
             for (size_t a = 0; a < d_params.vocabulary->size(); ++a)
                 cl[a] = a % clcn;
 
-            for (size_t a = 0; a < iter; ++a)
+            for (size_t a = 0; a < iterations; ++a)
             {
                 for (size_t b = 0; b < clcn * d_params.layer1_size; ++b)
                     cent[b] = 0;
@@ -89,7 +88,7 @@ namespace Word2Vec
                 for (size_t c = 0; c < d_params.vocabulary->size(); ++c)
                 {
                     real closev = -10;
-                    int closeid = 0;
+                    size_t closeid = 0;
                     for (size_t d = 0; d < clcn; ++d)
                     {
                         real x = 0;

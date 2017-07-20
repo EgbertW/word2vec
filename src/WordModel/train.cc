@@ -16,7 +16,6 @@ namespace Word2Vec
     void WordModel::train()
     {
         d_params.starting_alpha = *d_params.alpha;
-        vector<real> &expTable = *d_params.expTable;
 
         if (d_params.negative > 0)
             initUnigramTable();
