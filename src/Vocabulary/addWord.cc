@@ -22,7 +22,7 @@ namespace Word2Vec
         size_t index = this->size() - 1;
 
         hash = getWordHash(word);
-        while (d_vocab_hash[hash] != -1)
+        while (d_vocab_hash[hash] != npos)
             hash = (hash + 1) % d_vocab_hash_size;
         d_vocab_hash[hash] = index;
 

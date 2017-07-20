@@ -103,8 +103,8 @@ namespace Word2Vec
                 char grama[params.ngram + 3];
                 while (getGrams(word, grama, gramCpt, params.ngram, params.overlap, params.position))
                 {
-                    long indGram = voc.search(grama);
-                    if (indGram != string::npos && indGram != -1)
+                    size_t indGram = voc.search(grama);
+                    if (indGram != string::npos)
                     {
                         offset = indGram * params.layer1_size;
                     }
@@ -146,9 +146,9 @@ namespace Word2Vec
             }
             else
             {
-                long indGram = voc.search(word);
+                size_t indGram = voc.search(word);
 
-                if (indGram != string::npos && indGram > -1)
+                if (indGram != string::npos)
                 {
                     offset = indGram * params.layer1_size;
                     for (size_t i = 0; i < params.layer1_size; ++i)

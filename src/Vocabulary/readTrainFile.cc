@@ -28,7 +28,7 @@ namespace Word2Vec
         input.seekg(0, ios_base::beg);
 
         // Reset vocabulary
-        fill(d_vocab_hash, d_vocab_hash + d_vocab_hash_size, -1);
+        fill(d_vocab_hash.begin(), d_vocab_hash.end(), npos);
         d_vocabulary.clear();
         d_train_words = 0;
 

@@ -32,7 +32,6 @@ namespace Word2Vec
         vector<int> &table(*d_params.table);
 
         int start = 0;
-        int end;
         char gram[d_params.ngram + 3];
 
         vector<real> neu1(d_params.layer1_size);
@@ -67,6 +66,7 @@ namespace Word2Vec
 
             if (sentence_length == 0)
             {
+                fill(sen, sen + MAX_SENTENCE_LENGTH + 1, Vocabulary::npos);
                 int end = 0;
                 size_t i = 0;
 
@@ -80,7 +80,7 @@ namespace Word2Vec
 
                     end = getGrams(wordToGram, gram, i, d_params.ngram, d_params.overlap, d_params.position);
                     
-                    int word;
+                    size_t word;
                     if (end == -1)
                         word = voc->search(wordToGram);
                     else
@@ -95,10 +95,10 @@ namespace Word2Vec
                     if (end == -1)
                         end = 0;
 
-                    if (word == -1)
+                    if (word == Vocabulary::npos)
                         continue;		
 
-                    if (word == 0) //context break
+                    if (word == 0) //context break -> <s/> is always first in vocabulary
                         break;
 
                     // The subsampling randomly discards frequent words while keeping the ranking same
@@ -112,7 +112,7 @@ namespace Word2Vec
                     }
 
                     sen[sentence_length] = word;
-                    sentence_length++;
+                    ++sentence_length;
 
                     if (sentence_length >= MAX_SENTENCE_LENGTH)
                         break;
@@ -127,10 +127,13 @@ namespace Word2Vec
             if (word_count > voc->nTrainWords() / d_params.num_threads) //trained all word
                 break;
 
-            int word = sen[sentence_position]; //index
+            size_t word = sen[sentence_position]; //index
 
-            if (word == -1) 
+            if (word == Vocabulary::npos) 
+            {
+                fprintf(stderr, "This never happens as word == -1 is already checked in the sentence loop\n");
                 continue;
+            }
 
             fill(neu1.begin(), neu1.end(), 0);
             fill(neu1e.begin(), neu1e.end(), 0);
@@ -146,17 +149,17 @@ namespace Word2Vec
                 {
                     int c = sentence_position - d_params.window + a;
                     
-                    if (c < 0 || c >= sentence_length)
+                    if (c < 0 || c >= static_cast<int>(sentence_length))
                         continue;
 
-                    int last_word = sen[c]; //index of word
-                    if (last_word == -1) 
+                    size_t last_word = sen[c]; //index of word
+                    if (last_word == Vocabulary::npos)
                     {
                         printf("This can only happen when the sentence did not reach MAX_SENTENCE_LENGTH -> EOF\n");
                         continue;
                     }
 
-                    for (c = 0; c < d_params.layer1_size; ++c) // c is each vector index
+                    for (size_t c = 0; c < d_params.layer1_size; ++c) // c is each vector index
                         neu1[c] += syn0[c + last_word * d_params.layer1_size]; //sum of all vectors in input window (fig cbow) -> vectors on hidden
                 }
             }
@@ -250,15 +253,18 @@ namespace Word2Vec
                 {
                     int c = sentence_position - d_params.window + a;
 
-                    if (c < 0 || c >= sentence_length)
+                    if (c < 0 || c >= static_cast<int>(sentence_length))
                         continue;
 
-                    int last_word = sen[c];
+                    size_t last_word = sen[c];
 
-                    if (last_word == -1)
+                    if (last_word == Vocabulary::npos)
+                    {
+                        printf("This can only happen when the sentence did not reach MAX_SENTENCE_LENGTH -> EOF\n");
                         continue;
+                    }
 
-                    for (c = 0; c < d_params.layer1_size; ++c)
+                    for (size_t c = 0; c < d_params.layer1_size; ++c)
                         syn0[c + last_word * d_params.layer1_size] += neu1e[c];  //modify word vectors with error
                 }
             }

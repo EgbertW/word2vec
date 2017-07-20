@@ -21,7 +21,7 @@ namespace Word2Vec
             cout << "Reading vocabulary from " << read_vocab_file << endl;
 
         // Reset vocabulary
-        fill(d_vocab_hash, d_vocab_hash + d_vocab_hash_size, -1);
+        fill(d_vocab_hash.begin(), d_vocab_hash.end(), npos);
         d_vocabulary.clear();
 
         while (true)

@@ -67,14 +67,15 @@ namespace Word2Vec
 
             if (sentence_length == 0)
             {
+                fill(sen, sen + MAX_SENTENCE_LENGTH + 1, Vocabulary::npos);
             
 
 
                 while (not input.eof())
                 {
-                    int word = voc->readWordIndex(input); 
+                    size_t word = voc->readWordIndex(input); 
 
-                    if (word == -1)
+                    if (word == Vocabulary::npos)
                         continue;
 
                     ++word_count;
@@ -126,11 +127,11 @@ namespace Word2Vec
             if (word_count > voc->nTrainWords() / d_params.num_threads) //trained all word
                 break;
 
-            int word = sen[sentence_position]; //index
+            size_t word = sen[sentence_position]; //index
 
-            if (word == -1) 
+            if (word == Vocabulary::npos) 
             {
-                printf("This never happens as word == -1 is already checked in the sentece loop\n");
+                fprintf(stderr, "This never happens as word == -1 is already checked in the sentence loop\n");
                 continue;
             }
 
@@ -151,8 +152,8 @@ namespace Word2Vec
                     if (c < 0 || c >= sentence_length)
                         continue;
 
-                    int last_word = sen[c]; //index of word
-                    if (last_word == -1)
+                    size_t last_word = sen[c]; //index of word
+                    if (last_word == Vocabulary::npos)
                     {
                         printf("This can only happen when the sentence did not reach MAX_SENTENCE_LENGTH -> EOF\n");
                         continue;

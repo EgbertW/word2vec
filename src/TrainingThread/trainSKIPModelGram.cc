@@ -67,9 +67,10 @@ namespace Word2Vec
 
             if (sentence_length == 0)
             {
+                fill(sen, sen + MAX_SENTENCE_LENGTH + 1, Vocabulary::npos);
                 end = 0;
                 size_t i = 0;
-                int word;
+                size_t word;
 
                 while (not input.eof())
                 {
@@ -95,7 +96,7 @@ namespace Word2Vec
                     if (end == -1)
                         end = 0;
 
-                    if (word == -1)
+                    if (word == Vocabulary::npos)
                         continue;
 
                     if (word == 0) //context break
@@ -127,10 +128,13 @@ namespace Word2Vec
             if (word_count > voc->nTrainWords() / d_params.num_threads) //trained all word
                 break;
 
-            int word = sen[sentence_position]; //index
+            size_t word = sen[sentence_position]; //index
 
-            if (word == -1) 
+            if (word == Vocabulary::npos)
+            {
+                fprintf(stderr, "This never happens as word == -1 is already checked in the sentence loop\n");
                 continue;
+            }
 
             fill(neu1.begin(), neu1.end(), 0);
             fill(neu1e.begin(), neu1e.end(), 0);
@@ -149,14 +153,17 @@ namespace Word2Vec
                     if (c < 0 || c >= sentence_length)
                         continue;
 
-                    int last_word = sen[c];
+                    size_t last_word = sen[c];
 
-                    if (last_word == -1)
+                    if (last_word == Vocabulary::npos)
+                    {
+                        printf("This can only happen when the sentence did not reach MAX_SENTENCE_LENGTH -> EOF\n");
                         continue;
+                    }
 
                     size_t l1 = last_word * d_params.layer1_size; //word index
 
-                    for (c = 0; c < d_params.layer1_size; ++c)
+                    for (size_t c = 0; c < d_params.layer1_size; ++c)
                         neu1e[c] = 0;
 
                     // HIERARCHICAL SOFTMAX

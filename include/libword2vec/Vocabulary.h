@@ -9,11 +9,14 @@ namespace Word2Vec
 {
     class Vocabulary
     {
-        protected:
-            int d_vocab_hash_size;
-            unsigned long long int d_train_words;
+        public:
+            static const size_t npos = std::string::npos;
 
-            int *d_vocab_hash;
+        protected:
+            size_t d_vocab_hash_size;
+            size_t d_train_words;
+
+            std::vector<size_t> d_vocab_hash;
             std::vector<VocabularyWord> d_vocabulary;
 
         public:
@@ -26,17 +29,17 @@ namespace Word2Vec
             void readWord(std::string &word, std::istream &input) const;
 
             /* Reads a word from file descriptor fin */
-            int readWordIndex(std::istream &input) const;
+            size_t readWordIndex(std::istream &input) const;
 
             /* Returns hash value of a word*/
-            int getWordHash(std::string const &word) const;
+            size_t getWordHash(std::string const &word) const;
 
             /* Returns position of a word in the vocabulary;
              if the word is not found, returns -1*/
-            int search(std::string const &word) const;
+            size_t search(std::string const &word) const;
 
             /* Reads a word and returns its index in the vocabulary*/
-            int readWord(std::istream &input);
+            size_t readWord(std::istream &input);
 
             /* Adds a word to the vocabulary*/
             size_t addWord(std::string const &word);
@@ -82,9 +85,6 @@ namespace Word2Vec
             /** Get the hash size */
             size_t hashSize() const;
 
-            /** Show a small summary */
-            void printSummary() const;
-
         private:
             Vocabulary(Vocabulary const &rhs);
     };
@@ -112,13 +112,6 @@ namespace Word2Vec
     inline size_t Vocabulary::nTrainWords() const
     {
         return d_train_words;
-    }
-
-    inline void Vocabulary::printSummary() const
-    {
-        printf("Vocabulary hash size: %d\n", d_vocab_hash_size);
-        printf("Number of train words: %llu\n", d_train_words);
-        printf("Vocabulary vector size: %lu\n", d_vocabulary.size());
     }
 }
 #endif

@@ -14,7 +14,7 @@ namespace Word2Vec
             size_t d_cn; // times of occurence in train file
             std::string d_word;
             std::array<char, MAX_CODE_LENGTH> d_code;
-            std::array<int, MAX_CODE_LENGTH> d_point;
+            std::array<size_t, MAX_CODE_LENGTH> d_point;
             size_t d_codelen;
 
 
@@ -72,12 +72,12 @@ namespace Word2Vec
                 d_cn = cn;
             }
 
-            inline int pointAt(size_t index)
+            inline size_t pointAt(size_t index)
             {
                 return d_point[index];
             }
 
-            inline void setPointAt(size_t index, int value)
+            inline void setPointAt(size_t index, size_t value)
             {
                 d_point[index] = value;
             }
@@ -87,9 +87,9 @@ namespace Word2Vec
                 return d_word;
             }
 
-            inline char codeAt(int pos) const
+            inline char codeAt(size_t index) const
             {
-                return d_code[pos];
+                return d_code[index];
             }
 
             inline void setCodeAt(size_t index, char code)

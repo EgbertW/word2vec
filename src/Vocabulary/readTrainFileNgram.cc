@@ -15,7 +15,7 @@ namespace Word2Vec
         char *gram = new char[params.ngram * 2 + 4]; //possibility to merge a ngram with another one < ngram size + position (3 tokens) + '\0'
 
         // Reset hash table
-        fill(d_vocab_hash, d_vocab_hash + d_vocab_hash_size, -1);
+        fill(d_vocab_hash.begin(), d_vocab_hash.end(), npos);
 
         ifstream input(params.train_file, ios_base::in | ios_base::binary);
 

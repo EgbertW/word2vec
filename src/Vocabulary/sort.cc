@@ -16,7 +16,7 @@ namespace Word2Vec
         // Sort the vocabulary and keep </s> at the first position
         std::stable_sort(d_vocabulary.begin() + 1, d_vocabulary.end());
 
-        fill(d_vocab_hash, d_vocab_hash + d_vocab_hash_size, -1);
+        fill(d_vocab_hash.begin(), d_vocab_hash.end(), npos);
         d_train_words = 0;
 
         // Words occuring less than min_count times will be discarded from the vocab
@@ -34,7 +34,7 @@ namespace Word2Vec
             // Hash will be re-computed, as after the sorting it is not actual
             size_t hash = getWordHash(d_vocabulary[a].word());
 
-            while (d_vocab_hash[hash] != -1)
+            while (d_vocab_hash[hash] != npos)
                 hash = (hash + 1) % d_vocab_hash_size;
 
             d_vocab_hash[hash] = a;

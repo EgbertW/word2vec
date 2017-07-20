@@ -9,10 +9,11 @@ namespace Word2Vec
     /*Look if word already in vocab, if not add, if yes, increment. */
     void Vocabulary::searchAndAdd(string const &word)
     {
-        int i = search(word);
+        size_t i = search(word);
 
-        if (i == -1)
+        if (i == npos)
         {
+            // TODO: Don't we always want to set 1 for a new word? Maybe add to the addWord function?
             i = addWord(word);
             get(i).setCn(1);
         }
@@ -28,7 +29,7 @@ namespace Word2Vec
         }
 
         // TODO: Check should not be needed
-        if (search(word) == -1)
+        if (search(word) == npos)
             cerr << word << " wasn't properly imported, dafuq?" << endl;
     }
 }

@@ -16,7 +16,7 @@ namespace Word2Vec
                 ++ptr;
         }
 
-        fill(d_vocab_hash, d_vocab_hash + d_vocab_hash_size, -1);
+        fill(d_vocab_hash.begin(), d_vocab_hash.end(), npos);
 
         size_t s = size();
         for (size_t a = 0; a < s; ++a)
@@ -24,7 +24,7 @@ namespace Word2Vec
             // Hash will be re-computed, as it is not actual
             size_t hash = getWordHash(get(a).word());
 
-            while (d_vocab_hash[hash] != -1)
+            while (d_vocab_hash[hash] != npos)
                 hash = (hash + 1) % d_vocab_hash_size;
 
             d_vocab_hash[hash] = a;

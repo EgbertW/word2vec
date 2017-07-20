@@ -7,7 +7,7 @@ using namespace std;
 namespace Word2Vec
 {
     /* Returns hash value of a word*/
-    int Vocabulary::getWordHash(std::string const &word) const
+    size_t Vocabulary::getWordHash(std::string const &word) const
     {
         size_t hash = 0;
 

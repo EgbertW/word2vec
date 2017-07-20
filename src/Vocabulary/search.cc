@@ -6,15 +6,15 @@ namespace Word2Vec
 {
     /* Returns position of a word in the vocabulary;
      if the word is not found, returns -1*/
-    int Vocabulary::search(string const &word) const
+    size_t Vocabulary::search(string const &word) const
     {
-        int hash = getWordHash(word);
+        size_t hash = getWordHash(word);
         
         while (true)
         {
-            int index = d_vocab_hash[hash];
-            if (index == -1)
-                return -1;
+            size_t index = d_vocab_hash[hash];
+            if (index == npos)
+                return npos;
 
             if (d_vocabulary[index].word() == word)
                 return d_vocab_hash[hash];
@@ -22,6 +22,6 @@ namespace Word2Vec
             hash = (hash + 1) % d_vocab_hash_size;
         }
 
-        return -1;
+        return npos;
     }
 }
