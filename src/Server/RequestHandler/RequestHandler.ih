@@ -1,0 +1,7 @@
+#include <libword2vec/Server/RequestHandler.h>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <libword2vec/Server/MimeTypes.h>
+#include <libword2vec/Server/Reply.h>
+#include <libword2vec/Server/Request.h>

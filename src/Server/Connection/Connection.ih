@@ -1,0 +1,5 @@
+#include <libword2vec/Server/Connection.h>
+#include <utility>
+#include <vector>
+#include <libword2vec/Server/ConnectionManager.h>
+#include <libword2vec/Server/RequestHandler.h>

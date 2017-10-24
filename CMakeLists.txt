@@ -4,14 +4,15 @@ project(libword2vec)
 add_definitions("-std=c++11 -O3 -s -Wall")
 set(CMAKE_BUILD_TYPE Debug)
 
-find_package(Boost 1.38.0)
+find_package(Boost 1.58.0)
 
 include_directories(include)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(word2vec src/word2vec.cc)
-
 add_executable(distance src/distance.cc)
+add_executable(word2phrase src/word2phrase.cc)
+add_executable(HttpServer src/HttpServer.cc)
 
 target_link_libraries(word2vec
     WordModel.o
@@ -21,11 +22,21 @@ target_link_libraries(word2vec
     -pthread
 )
 
+target_link_libraries(word2phrase
+    Vocabulary.o
+    -pthread
+)
+
 target_link_libraries(distance
     WordModel.o
     Vocabulary.o
 )
 
+target_link_libraries(HttpServer
+    HttpServer.o
+    -lboost_system
+    -pthread
+)
 
 ###
 # Old makefile follows
@@ -114,4 +125,35 @@ add_library(
     src/WordModel/saveTrainResultsNgrams.cc
     src/WordModel/readWordModels.cc
     src/WordModel/findWords.cc
+)
+
+add_library(
+    HttpServer.o
+    src/Server/RequestHandler/constructor.cc
+    src/Server/RequestHandler/handleRequest.cc
+    src/Server/RequestHandler/url_decode.cc
+    src/Server/RequestHandler/RequestHandler.ih
+    src/Server/RequestParser/is_ctl.cc
+    src/Server/RequestParser/constructor.cc
+    src/Server/RequestParser/reset.cc
+    src/Server/RequestParser/is_char.cc
+    src/Server/RequestParser/is_digit.cc
+    src/Server/RequestParser/consume.cc
+    src/Server/RequestParser/is_tspecial.cc
+    src/Server/Reply/Reply.cc
+    src/Server/ConnectionManager/start.cc
+    src/Server/ConnectionManager/stop.cc
+    src/Server/ConnectionManager/constructor.cc
+    src/Server/ConnectionManager/stopAll.cc
+    src/Server/Connection/start.cc
+    src/Server/Connection/stop.cc
+    src/Server/Connection/constructor.cc
+    src/Server/Connection/doWrite.cc
+    src/Server/Connection/Connection.ih
+    src/Server/Connection/doRead.cc
+    src/Server/MimeTypes/extension_to_type.cc
+    src/Server/Server/constructor.cc
+    src/Server/Server/doAccept.cc
+    src/Server/Server/run.cc
+    src/Server/Server/doAwaitStop.cc
 )
