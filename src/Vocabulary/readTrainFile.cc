@@ -3,6 +3,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <boost/format.hpp>
+
 using namespace std;
 
 namespace Word2Vec
@@ -32,30 +34,49 @@ namespace Word2Vec
         d_vocabulary.clear();
         d_train_words = 0;
 
-        addWord("</s>");
+        size_t newline = addWord("</s>");
 
-        while (true) 
+        bool first_word = true;
+        string last_word;
+        while (not input.eof()) 
         {
             string word;
             readWord(word, input);
-            if (not word.empty())
-                searchAndAdd(word);
-            
-            if (input.eof())
-                break;
+            if (word.empty())
+                continue;
 
+            size_t index = npos;
+            index = searchAndAdd(word);
+
+            if (index == newline)
+            {
+                first_word = true;
+                continue;
+            }
+            else
+                first_word = false;
+            
             ++d_train_words;
 
             if ((DEBUG_MODE > 1) && (d_train_words % 100000 == 0))
-                cout << d_train_words / 1000 << "K\r" << flush;
+                cout << boost::format("Words processed: %luK\tVocabulary size: %luK\r") % (d_train_words / 1000) % (size() / 1000) << flush;
+
+            if (not params.train_phrase || first_word)
+                continue;
+
+            string bigram_word = (boost::format("%s_%s") % last_word % word).str();
+            last_word = std::move(word);
+            searchAndAdd(bigram_word);
         }
         input.close();
 
+            cout << "SORTING " << size() << endl;
         sort(params.min_count);
+            cout << "SORTED " << size() << endl;
 
-        if (DEBUG_MODE > 1)
+        if (DEBUG_MODE > 1 || true)
         {
-            cout << "Vocabulary size: " << d_vocabulary.size() << endl;
+            cout << "\nVocabulary size: " << d_vocabulary.size() << endl;
             cout << "Words in train file:  " << d_train_words << endl;
         }
 

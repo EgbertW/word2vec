@@ -92,6 +92,12 @@ namespace Word2Vec
         /** Hierarchical Softmax enabled */
         bool hs = 1;
 
+        /** Train on phrases */
+        bool train_phrase = false;
+
+        /** Phrase training: minimum score of word bigram */
+        real phrase_threshold = 100;
+
         /** Number of bytes in the training file */
         size_t file_size = 0;
 

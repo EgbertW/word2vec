@@ -11,7 +11,11 @@ namespace Word2Vec
     {
         size_t hash = 0;
 
-        for (size_t a = 0; a < word.length(); ++a)
+        size_t strlen= word.length();
+        if (strlen > MAX_STRING)
+            strlen = MAX_STRING;
+            
+        for (size_t a = 0; a < strlen; ++a)
             hash = hash * 257 + word[a];
 
         hash = hash % d_vocab_hash_size;

@@ -5,8 +5,10 @@ using namespace std;
 namespace Word2Vec
 {
     /* Reduces the vocabulary by removing infrequent tokens */
-    void Vocabulary::reduce(size_t min_reduce)
+    void Vocabulary::reduce()
     {
+        static size_t min_reduce = 1;
+
         auto ptr = d_vocabulary.begin();
         while (ptr != d_vocabulary.end())
         {
@@ -29,5 +31,7 @@ namespace Word2Vec
 
             d_vocab_hash[hash] = a;
         }
+
+        ++min_reduce;
     }
 }

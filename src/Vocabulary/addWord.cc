@@ -14,9 +14,6 @@ namespace Word2Vec
     {
         size_t hash;
 
-        if (word.length() > MAX_STRING)
-            throw runtime_error("Word too long");
-        
         VocabularyWord vword(word);
         d_vocabulary.push_back(vword);
         size_t index = this->size() - 1;

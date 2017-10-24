@@ -48,11 +48,11 @@ namespace Word2Vec
             void sort(size_t min_count);
 
             /* Reduces the vocabulary by removing infrequent tokens */
-            void reduce(size_t min_reduce);
+            void reduce();
 
             /*Look if word already in vocab, 
             if not add, if yes, increment. --- REDUCE VOCAB TO 1 /!\  */
-            void searchAndAdd(std::string const &word);
+            size_t searchAndAdd(std::string const &word);
 
             /*Create a vocab from train file - returns file size*/
             size_t readTrainFile(Parameters const &params);
