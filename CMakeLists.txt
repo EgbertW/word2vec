@@ -12,7 +12,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 add_executable(word2vec src/word2vec.cc)
 add_executable(distance src/distance.cc)
 add_executable(word2phrase src/word2phrase.cc)
-add_executable(HttpServer src/HttpServer.cc)
+add_executable(DistanceServer src/Server/DistanceServer.cc)
 
 target_link_libraries(word2vec
     WordModel.o
@@ -32,7 +32,9 @@ target_link_libraries(distance
     Vocabulary.o
 )
 
-target_link_libraries(HttpServer
+target_link_libraries(DistanceServer
+    WordModel.o
+    Vocabulary.o
     HttpServer.o
     -lboost_system
     -pthread

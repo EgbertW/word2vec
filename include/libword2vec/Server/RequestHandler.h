@@ -12,6 +12,7 @@
 #define WORD2VEC_SERVER_REQUEST_HANDLER_H
 
 #include <string>
+#include <libword2vec/WordModel.h>
 
 namespace Word2Vec {
 namespace Server {
@@ -27,14 +28,14 @@ class RequestHandler
         RequestHandler& operator=(RequestHandler const &) = delete;
         
         /// Construct with a directory containing files to be served.
-        explicit RequestHandler(std::string const &doc_root);
+        explicit RequestHandler(Word2Vec::WordModel &model);
         
         /// Handle a request and produce a reply.
         void handleRequest(Request const &req, Reply &rep);
     
     private:
         /// The directory containing the files to be served.
-        std::string d_doc_root;
+        Word2Vec::WordModel &d_word_model;
         
         /// Perform URL-decoding on a string. Returns false if the encoding was
         /// invalid.

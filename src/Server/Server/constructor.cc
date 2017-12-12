@@ -8,7 +8,7 @@ namespace Server {
 Server::Server(
     const std::string& address,
     const std::string& port,
-    const std::string& doc_root
+    Word2Vec::WordModel &model
 )
 :
     d_io_service(),
@@ -16,7 +16,7 @@ Server::Server(
     d_acceptor(d_io_service),
     d_connection_manager(),
     d_socket(d_io_service),
-    d_request_handler(doc_root)
+    d_request_handler(model)
 {
     // Register to handle the signals that indicate when the server should exit.
     // It is safe to register for the same signal multiple times in a program,

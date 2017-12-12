@@ -13,6 +13,7 @@
 
 #include <boost/asio.hpp>
 #include <string>
+#include <libword2vec/WordModel.h>
 #include "Connection.h"
 #include "ConnectionManager.h"
 #include "RequestHandler.h"
@@ -32,7 +33,7 @@ class Server
         explicit Server(
             std::string const &address,
             std::string const &port,
-            std::string const &doc_root
+            Word2Vec::WordModel &model
         );
         
         /// Run the server's io_service loop.

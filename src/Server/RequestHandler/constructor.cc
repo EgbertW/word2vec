@@ -3,9 +3,9 @@
 namespace Word2Vec {
 namespace Server {
 
-RequestHandler::RequestHandler(std::string const &doc_root)
+RequestHandler::RequestHandler(Word2Vec::WordModel &model)
 :
-    d_doc_root(doc_root)
+    d_word_model(model)
 {}
 
 } // namespace Server

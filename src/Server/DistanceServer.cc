@@ -13,6 +13,14 @@
 #include <boost/asio.hpp>
 #include <libword2vec/Server/Server.h>
 
+#include <libword2vec/Parameters.h>
+#include <libword2vec/WordModel.h>
+
+using namespace Word2Vec;
+using namespace std;
+
+typedef WordModel::WordResult WordResult;
+
 int main(int argc, char* argv[])
 {
     try
@@ -20,16 +28,18 @@ int main(int argc, char* argv[])
         // Check command line arguments.
         if (argc != 4)
         {
-            std::cerr << "Usage: HttpServer <address> <port> <doc_root>\n";
-            std::cerr << "  For IPv4, try:\n";
-            std::cerr << "    HttpServer 0.0.0.0 80 .\n";
-            std::cerr << "  For IPv6, try:\n";
-            std::cerr << "    HttpServer 0::0 80 .\n";
+            std::cerr << "Usage: HttpServer <address> <port> <vector-file>\n";
             return 1;
         }
+
+        string file_name(argv[3]);
+        Parameters params;
+        params.debug_mode = 2;
+        WordModel model(params);
+        model.readWordModels(file_name);
         
         // Initialise the server.
-        Word2Vec::Server::Server s(argv[1], argv[2], argv[3]);
+        Word2Vec::Server::Server s(argv[1], argv[2], model);
         
         // Run the server until stopped.
         s.run();
