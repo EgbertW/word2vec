@@ -28,6 +28,7 @@ namespace Word2Vec
         string header;
         getline(input, header); 
         header += ' ';
+        cout << "Read header: " << header << endl;
 
         size_t words = 0;
         d_params.ngram = 0;
@@ -39,7 +40,7 @@ namespace Word2Vec
 
         for (char ch : header)
         {
-            if (ch == ' ')
+            if (ch == ' ' || ch == '\n')
             {
                 if (read_some)
                 {
@@ -105,7 +106,7 @@ namespace Word2Vec
                 real value = buf.rv;  //*reinterpret_cast<real *>(buf);
                 matrix[a + index * d_params.layer1_size] = value;
             }
-            input.get(); // Skip EOL character
+            cout << "Read #" << b << ": `" << word << "`\n";
 
             // Normalize the vector
             real len = 0;
