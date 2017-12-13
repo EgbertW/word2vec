@@ -1,6 +1,10 @@
 #include "RequestHandler.ih"
 #include <iostream>
 #include <map>
+#include <sstream>
+
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 namespace Word2Vec {
 namespace Server {
@@ -89,8 +93,36 @@ void RequestHandler::handleRequest(Request const &req, Reply &rep)
 
     if (query.find("word") != query.end())
     {
+        using boost::property_tree::ptree;
+        using Word2Vec::WordModel; 
+
         std::string word = query["word"];
         std::cout << "Looking for word " << word << std::endl;
+        std::vector<WordModel::WordResult> results = d_word_model.findWords(word);
+
+        ptree tree;
+        ptree results_tree;
+
+        for (WordModel::WordResult r : results) {
+            ptree node;
+            node.put("word", r.second);
+            node.put("score", r.first);
+            results_tree.push_back(std::make_pair("", node));
+        }
+
+        tree.add_child("results", results_tree);
+
+        std::ostringstream json;
+        boost::property_tree::write_json(json, tree, false);
+
+        rep.status = Reply::ok;
+        rep.headers.resize(1);
+        rep.headers[0].name = "Content-Type";
+        rep.headers[0].value = "application/json";
+
+        rep.content.append(json.str());
+        std::cout << "[200] GET word=" << word << std::endl;
+        return;
     }
     
     // If path ends in slash (i.e. is a directory) then add "index.html".

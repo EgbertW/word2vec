@@ -15,7 +15,7 @@ namespace Word2Vec
         Parameters::real rv;
     };
 
-    void WordModel::readWordModels(std::string const &input_file)
+    void WordModel::readWordModels(string const &input_file)
     {
         if (d_params.vocabulary.get() == nullptr)
             d_params.vocabulary = make_shared<Vocabulary>(VOCAB_HASH_SIZE);
@@ -82,7 +82,7 @@ namespace Word2Vec
         Vocabulary &voc(*d_params.vocabulary);
 
         size_t units = d_params.layer1_size * words;
-        d_params.syn0 = make_shared<std::vector<real> >(units, 0);
+        d_params.syn0 = make_shared<vector<real> >(units, 0);
 
         vector<real> &matrix(*d_params.syn0);
 
@@ -106,7 +106,6 @@ namespace Word2Vec
                 real value = buf.rv;  //*reinterpret_cast<real *>(buf);
                 matrix[a + index * d_params.layer1_size] = value;
             }
-            cout << "Read #" << b << ": `" << word << "`\n";
 
             // Normalize the vector
             real len = 0;
@@ -116,7 +115,11 @@ namespace Word2Vec
 
             for (size_t a = 0; a < d_params.layer1_size; ++a)
                 matrix[a + b * d_params.layer1_size] /= len;
+
+            if (b % 100000 == 0)
+                cout << "\rRead " << b << " words" << flush;
         }
+        cout << "Read " << words << " words " << endl;
         input.close();
     }
 }

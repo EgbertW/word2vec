@@ -33,9 +33,9 @@ target_link_libraries(distance
 )
 
 target_link_libraries(DistanceServer
+    HttpServer.o
     WordModel.o
     Vocabulary.o
-    HttpServer.o
     -lboost_system
     -pthread
 )
