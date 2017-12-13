@@ -1,11 +1,15 @@
 #include <libword2vec/Server/RequestParser.h>
 #include <libword2vec/Server/Request.h>
 
+#include <iostream>
+#include <algorithm>
+
 namespace Word2Vec {
 namespace Server {
 
 RequestParser::ResultType RequestParser::consume(Request &req, char input)
 {
+    std::cout << input << std::flush;
     switch (d_state)
     {
         case method_start:
@@ -180,6 +184,11 @@ RequestParser::ResultType RequestParser::consume(Request &req, char input)
             }
             else
             {
+                if (req.headers.size() >= MAX_HEADERS)
+                {
+                    std::cerr << "ERROR: Too many header - > " << MAX_HEADERS << std::endl;
+                    return bad;
+                }
                 req.headers.push_back(Header());
                 req.headers.back().name.push_back(input);
                 d_state = header_name;
@@ -217,6 +226,12 @@ RequestParser::ResultType RequestParser::consume(Request &req, char input)
             }
             else
             {
+                if (req.headers.back().name.size() >= MAX_HEADER_LENGTH)
+                {
+                    std::cerr << "ERROR: Too long header name: " << req.headers.back().name << "\n";
+                    return bad;
+                }
+
                 req.headers.back().name.push_back(input);
                 return indeterminate;
             }
@@ -242,6 +257,12 @@ RequestParser::ResultType RequestParser::consume(Request &req, char input)
             }
             else
             {
+                if (req.headers.back().value.size() >= MAX_HEADER_VALUE_LENGTH)
+                {
+                    std::cerr << "ERROR: Too long header value: " << req.headers.back().name << "\n";
+                    return bad;
+                }
+
                 req.headers.back().value.push_back(input);
                 return indeterminate;
             }
@@ -256,7 +277,50 @@ RequestParser::ResultType RequestParser::consume(Request &req, char input)
                 return bad;
             }
         case expecting_newline_3:
-            return (input == '\n') ? good : bad;
+            if (input != '\n')
+                return bad;
+
+            d_remaining_content_size = 0;
+            for (Header h : req.headers)
+            {
+                std::string n = h.name;
+                std::transform(n.begin(), n.end(), n.begin(), ::tolower);
+                if ("content-length" == n)
+                {
+                    try
+                    {
+                        d_remaining_content_size = std::stoi(h.value);
+                        std::cout << "Header: " << n << " = " << d_remaining_content_size << std::endl;
+                        break;
+                    }
+                    catch (std::invalid_argument const &e)
+                    {
+                        std::cerr << "ERROR: Could not convert " << h.value << " to number\n";
+                        return bad;
+                    }
+                    catch (std::out_of_range const &e)
+                    {
+                        std::cerr << "ERROR: Could not convert " << h.value << " to number\n";
+                        return bad;
+                    }
+                }
+            }
+
+            if (d_remaining_content_size > MAX_CONTENT_LENGTH)
+            {
+                std::cerr << "ERROR: Too large content: " << d_remaining_content_size << std::endl;
+                return bad;
+            }
+
+            if (0 == d_remaining_content_size)
+                return good;
+
+            d_state = expecting_content;
+            std::cout << "Expecting " << d_remaining_content_size << " bytes to be read\n";
+            return indeterminate;
+        case expecting_content:
+            req.payload.push_back(input);
+            return 0 == --d_remaining_content_size ? good : indeterminate;
         default:
             return bad;
     }

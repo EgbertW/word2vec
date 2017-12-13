@@ -22,6 +22,11 @@ struct Request;
 class RequestParser
 {
     public:
+        const size_t MAX_CONTENT_LENGTH = 1024 * 1024;
+        const size_t MAX_HEADER_LENGTH = 1024 * 16;
+        const size_t MAX_HEADER_VALUE_LENGTH = 64 * 1024;
+        const size_t MAX_HEADERS = 1024;
+
         /// Construct ready to parse the request method.
         RequestParser();
         
@@ -89,8 +94,11 @@ class RequestParser
             space_before_header_value,
             header_value,
             expecting_newline_2,
-            expecting_newline_3
+            expecting_newline_3,
+            expecting_content
         } d_state;
+
+        size_t d_remaining_content_size;
 };
 
 } // namespace server

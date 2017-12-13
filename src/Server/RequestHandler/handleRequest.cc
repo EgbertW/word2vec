@@ -33,6 +33,10 @@ namespace Server {
 //             cout << (boost::format("%50s\t\t%f\n") % r.second % r.first);
 //     }
 // }
+using boost::property_tree::ptree;
+using Word2Vec::WordModel; 
+using namespace std;
+
 
 void RequestHandler::handleRequest(Request const &req, Reply &rep)
 {
@@ -48,13 +52,15 @@ void RequestHandler::handleRequest(Request const &req, Reply &rep)
     if (request_path.empty() || request_path[0] != '/' || request_path.find("..") != std::string::npos)
     {
         rep = Reply::stock_reply(Reply::bad_request);
-        std::cout << "[400] GET " << request_path << std::endl;
+        std::cout << "[400] " << req.method << " " << request_path << std::endl;
         return;
     }
 
     // Find out if there is a query
     size_t query_pos = request_path.find("?");
-    std::map<std::string, std::string> query;
+    //std::map<std::string, std::string> query;
+
+    ptree query;
     if (query_pos != std::string::npos)
     {
         std::string query_str = request_path.substr(query_pos + 1);
@@ -81,22 +87,66 @@ void RequestHandler::handleRequest(Request const &req, Reply &rep)
                 {
                     std::string key = param.substr(0, query_pos);
                     std::string value = param.substr(query_pos + 1);
-                    query[key] = value;
+                    size_t brackets = key.rfind("[]");
+                    if (string::npos != brackets)
+                        key = key.substr(0, brackets);
+                    query.add(key, value);
                 }
                 else
                 {
-                    query[param] = "1";
+                    query.add(param, "1");
                 }
             }
         }
     }
 
-    if (query.find("word") != query.end())
-    {
-        using boost::property_tree::ptree;
-        using Word2Vec::WordModel; 
+    std::ostringstream q_json;
+    boost::property_tree::write_json(q_json, query, false);
+    cout << "Parsed query: " << q_json.str()<< endl;
 
-        std::string word = query["word"];
+    if ("/vector" == request_path && "GET" == req.method)
+    {
+        auto iters = query.equal_range("token");
+        auto start = iters.first;
+        auto end = iters.second;
+
+        ptree response;
+        ptree vectors;
+
+        Vocabulary const &vocab(d_word_model.vocab());
+        for ( ; start != end; ++start)
+        {
+            string token = start->second.get_value<string>();
+            vector<WordModel::real> vec(d_word_model.getVector(token));
+            //size_t pos = vocab.search(token);
+
+            ptree tree_vec;
+            ptree elem;
+            for (WordModel::real r : vec)
+            {
+                elem.put_value(r);
+                tree_vec.push_back(std::make_pair("", elem));
+            }
+
+            vectors.add_child(token, tree_vec);
+        }
+        response.put_child("vectors", vectors);
+
+        ostringstream json;
+        boost::property_tree::write_json(json, response);
+
+        rep.status = Reply::ok;
+        rep.headers.resize(1);
+        rep.headers[0].name = "Content-Type";
+        rep.headers[0].value = "application/json";
+        rep.content.append(json.str());
+        std::cout << "[200] " << req.method << " /vector" << std::endl;
+        return;
+    }
+
+    if (query.count("word") > 0)
+    {
+        std::string word = query.get_value<string>("word");
         std::cout << "Looking for word " << word << std::endl;
         std::vector<WordModel::WordResult> results = d_word_model.findWords(word);
 
@@ -121,7 +171,7 @@ void RequestHandler::handleRequest(Request const &req, Reply &rep)
         rep.headers[0].value = "application/json";
 
         rep.content.append(json.str());
-        std::cout << "[200] GET word=" << word << std::endl;
+        std::cout << "[200] " << req.method << " word=" << word << std::endl;
         return;
     }
     
@@ -147,12 +197,12 @@ void RequestHandler::handleRequest(Request const &req, Reply &rep)
     if (!is)
     {
         rep = Reply::stock_reply(Reply::not_found);
-        std::cout << "[404] GET " << request_path << std::endl;
+        std::cout << "[404] " << req.method << " " << request_path << std::endl;
         return;
     }
     
     // Fill out the reply to be sent to the client.
-    std::cout << "[200] GET " << request_path << std::endl;
+    std::cout << "[200] " << req.method << " " << request_path << std::endl;
     rep.status = Reply::ok;
     char buf[512];
     while (is.read(buf, sizeof(buf)).gcount() > 0)
