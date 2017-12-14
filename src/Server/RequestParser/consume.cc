@@ -9,7 +9,6 @@ namespace Server {
 
 RequestParser::ResultType RequestParser::consume(Request &req, char input)
 {
-    std::cout << input << std::flush;
     switch (d_state)
     {
         case method_start:
@@ -290,7 +289,6 @@ RequestParser::ResultType RequestParser::consume(Request &req, char input)
                     try
                     {
                         d_remaining_content_size = std::stoi(h.value);
-                        std::cout << "Header: " << n << " = " << d_remaining_content_size << std::endl;
                         break;
                     }
                     catch (std::invalid_argument const &e)
@@ -316,7 +314,6 @@ RequestParser::ResultType RequestParser::consume(Request &req, char input)
                 return good;
 
             d_state = expecting_content;
-            std::cout << "Expecting " << d_remaining_content_size << " bytes to be read\n";
             return indeterminate;
         case expecting_content:
             req.payload.push_back(input);
